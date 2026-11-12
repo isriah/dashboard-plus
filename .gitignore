@@ -1,0 +1,12 @@
+# Packed copies for sharing
+*.zip
+*.crx
+*.pem
+
+# OS clutter
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Screenshots show real teams and people: keep them local
+screenshots/
