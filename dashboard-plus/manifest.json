@@ -1,9 +1,42 @@
 {
   "manifest_version": 3,
   "name": "FIRST Dashboard+",
-  "version": "0.5.0",
+  "version": "0.6.4",
   "description": "Plain-English task reasons, persona shortcuts, bulk roster actions and layout fixes. Runs entirely in your browser.",
+  "permissions": [
+    "storage"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "FIRST Dashboard+ is on. Click to turn it off.",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "content_scripts": [
+    {
+      "matches": [
+        "https://my.firstinspires.org/Dashboard/*",
+        "https://my.firstinspires.org/Teams/*",
+        "https://my.firstinspires.org/Profile/*"
+      ],
+      "js": [
+        "bridge.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    },
     {
       "matches": [
         "https://my.firstinspires.org/Dashboard/*",

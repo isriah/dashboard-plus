@@ -9,7 +9,7 @@
 (() => {
   'use strict';
   if (window.__dashPlus) return;
-  window.__dashPlus = '0.5.0';
+  window.__dashPlus = '0.6.4';
 
   // ---------- small helpers ----------
 
@@ -44,6 +44,31 @@
     let timer = 0;
     return () => { clearTimeout(timer); timer = setTimeout(fn, ms); };
   }
+
+  // ---------- on/off: the toolbar button ----------
+
+  // bridge.js reports the toolbar's setting as data-dplus="on"/"off" on <html> and fires "dplus:state" when it changes.
+  // Without it (for example when run as a userscript) Dashboard+ is simply on. content.css keys every rule to the same
+  // attribute, so styles follow automatically; each feature below has an on() and an off() for what it adds to the page.
+  const root = document.documentElement;
+  if (!root.dataset.dplus) root.dataset.dplus = 'on';
+  const isOn = () => root.dataset.dplus !== 'off';
+  const features = [];
+  let applied = isOn();
+
+  function feature(f) {
+    features.push(f);
+    if (applied) f.on();
+  }
+
+  document.addEventListener('dplus:state', () => {
+    const now = isOn();
+    if (now === applied) return;
+    applied = now;
+    for (const f of features) {
+      try { if (now) f.on(); else f.off(); } catch (err) { console.error('Dashboard+:', err); }
+    }
+  });
 
   // ---------- team list: say what each outstanding task actually is ----------
 
@@ -133,6 +158,7 @@
   }
 
   // A "still loading" message with a spinner and a seconds counter, placed just before `anchor`. done() removes it.
+  const openNotes = new Set();
   function waitNote(anchor, id, title, hint) {
     document.getElementById(id)?.remove();
     const started = Date.now();
@@ -145,8 +171,12 @@
       const s = Math.round((Date.now() - started) / 1000);
       elapsed.textContent = s >= 5 ? '(' + s + ' s)' : '';
     }, 1000);
-    return { done: () => { clearInterval(tick); note.remove(); } };
+    const handle = { done: () => { clearInterval(tick); note.remove(); openNotes.delete(handle); } };
+    openNotes.add(handle);
+    return handle;
   }
+  // Switching off clears any loading message on screen. New ones are not shown while off (see initSlowLoads).
+  feature({ on() {}, off() { [...openNotes].forEach((n) => n.done()); } });
 
   // ---------- team pages: say so when a section is slow to load ----------
 
@@ -170,8 +200,10 @@
       const target = this[0];
       const known = SLOW_LOADS[target.id];
       let note = null, finished = false;
+      // The hook stays installed when Dashboard+ is switched off (unhooking could break a load in progress); it just
+      // stops showing messages.
       const timer = setTimeout(() => {
-        if (finished || !target.isConnected) return;
+        if (finished || !target.isConnected || !isOn()) return;
         note = waitNote(target, 'dplus-wait-' + (target.id || 'section'),
           known ? known.title : 'Loading…', known ? known.hint : 'FIRST is slow to answer right now.');
       }, known ? 0 : 1500);
@@ -230,10 +262,17 @@
     subs.forEach((n) => { n.classList.add('dplus-merged'); n.hidden = true; });
   }
 
+  // Puts the site's own badges back the way it drew them.
+  function unmergeBadges(list) {
+    list.querySelectorAll('.dplus-taskbadge').forEach((n) => n.remove());
+    list.querySelectorAll('.dplus-merged').forEach((n) => { n.classList.remove('dplus-merged'); n.hidden = false; });
+  }
+
   function initTeamList() {
     const list = document.getElementById('team-list-rows');
     if (!list) return;
-    const watcher = new MutationObserver(later(annotate, 50));
+    let active = false;
+    const watcher = new MutationObserver(later(() => { if (active) annotate(); }, 50));
 
     function annotate() {
       const teams = window.teams; // filled in by the page when its team list arrives
@@ -249,12 +288,19 @@
           if (reasons.length) { row.after(renderReasons(team, reasons)); mergeBadges(row, reasons.length); }
         });
       } finally {
-        watcher.observe(list, { childList: true });
+        if (active) watcher.observe(list, { childList: true });
       }
     }
 
-    watcher.observe(list, { childList: true });
-    annotate();
+    feature({
+      on() { active = true; watcher.observe(list, { childList: true }); annotate(); },
+      off() {
+        active = false;
+        watcher.disconnect();
+        list.querySelectorAll('.dplus-reasons').forEach((n) => n.remove());
+        unmergeBadges(list);
+      },
+    });
   }
 
   // ---------- team roster: summary, bulk accept, bulk Consent & Release reminders ----------
@@ -373,6 +419,20 @@
     if (!box) return;
     const panel = el('div', { id: 'dplus-roster-panel' });
     let busy = false; // a list is open or a run is in progress: leave the panel alone
+    let running = false; // requests are going out right now
+    let active = false;
+    const watcher = new MutationObserver(later(() => { if (active && !busy) showSummary(); }, 100));
+
+    feature({
+      on() { active = true; busy = false; watcher.observe(box, { childList: true }); showSummary(); },
+      off() {
+        active = false;
+        watcher.disconnect();
+        // A run that has started finishes first (stopping it half-way would leave some people done and some not);
+        // the panel goes when it ends. Otherwise it goes now, open list and all.
+        if (!running) { busy = false; panel.remove(); }
+      },
+    });
 
     function showSummary() {
       const r = readRoster();
@@ -422,7 +482,7 @@
     function showList(spec) {
       busy = true;
       const rows = [];
-      let running = false, stopAsked = false;
+      let stopAsked = false; // `running` is shared with the on/off switch above
 
       const goButton = el('button', { class: 'dplus-btn dplus-primary', type: 'button', onclick: run });
       const cancelButton = el('button', { class: 'dplus-btn', type: 'button', text: 'Cancel', onclick: close });
@@ -494,6 +554,8 @@
           await sleep(400); // one request at a time, with a pause, to stay gentle on the site
         }
         running = false;
+        // Dashboard+ was switched off during the run: now that it has finished, take the panel away.
+        if (!active) { busy = false; panel.remove(); return; }
 
         outcome.textContent = good + ' ' + spec.done + (bad ? ', ' + bad + ' failed' : '') + (skipped ? ', ' + skipped + ' not done' : '') + '.';
         const reload = el('button', {
@@ -516,10 +578,124 @@
         showSummary();
       }
     }
+    // The page replaces the roster's contents each time it loads or reloads it: the watcher above redraws the summary.
+  }
 
-    // The page replaces the roster's contents each time it loads or reloads it.
-    new MutationObserver(later(() => { if (!busy) showSummary(); }, 100)).observe(box, { childList: true });
-    showSummary();
+  // ---------- Dashboard: one scroll area while a team page is open ----------
+
+  // Team and Profile pages open inside the Dashboard in a frame one window tall, placed under the 113px fixed header
+  // and above the site footer. So there were two scroll areas: the page in the frame, and the Dashboard around it,
+  // which scrolled the header's worth plus the footer. Scrolling the Dashboard also pushed the top of the frame under
+  // the header, and the site's pop-ups (Invite, Send C&R reminder…) are pinned to the top of the frame, so they could
+  // end up completely out of sight. While the frame is showing, fit it exactly between the header and the bottom of
+  // the window and hide the footer (content.css, html.dplus-frame-open), leaving one scroll area.
+  function initFrameFit() {
+    if (window.top !== window) return;
+    const frame = document.getElementById('appFrame');
+    if (!frame) return;
+    const header = document.querySelector('.navbar-fixed-top');
+    let active = false;
+    function update() {
+      const open = active && frame.offsetWidth > 0 && frame.offsetHeight > 0 && getComputedStyle(frame).display !== 'none';
+      root.classList.toggle('dplus-frame-open', open);
+      if (header) root.style.setProperty('--dplus-header', header.offsetHeight + 'px');
+    }
+    const watcher = new MutationObserver(update);
+    feature({
+      on() {
+        active = true;
+        // The site shows and hides the frame with jQuery (inline style); the sections around it the same way.
+        watcher.observe(frame, { attributes: true, attributeFilter: ['style', 'class'] });
+        window.addEventListener('resize', update);
+        update();
+      },
+      off() {
+        active = false;
+        watcher.disconnect();
+        window.removeEventListener('resize', update);
+        update();
+      },
+    });
+  }
+
+  // ---------- team page header: room for the red task tooltip ----------
+
+  // FIRST shows a blue tooltip ("Lead Coach 2 missing"…) floating just above the active tab when it has open tasks.
+  // With the tighter header (content.css) it would cover the line above the tabs, and its height varies (one to three
+  // lines), so measure it and let the CSS reserve that much space above the tabs while it is showing.
+  function initTabNotice() {
+    const tabs = document.querySelector('.team-details-header .tabs-group');
+    if (!tabs) return;
+    let active = false;
+    function update() {
+      const note = active && tabs.querySelector('.outstanding-notification.team_profile_show');
+      // its height, plus the 8px it floats above the tab, plus a little air
+      if (note && note.offsetHeight) tabs.style.setProperty('--dplus-notice', (note.offsetHeight + 12) + 'px');
+      else tabs.style.removeProperty('--dplus-notice');
+    }
+    const watcher = new MutationObserver(update);
+    feature({
+      on() { active = true; watcher.observe(tabs, { subtree: true, attributes: true, attributeFilter: ['class'] }); update(); },
+      off() { active = false; watcher.disconnect(); update(); },
+    });
+  }
+
+  // ---------- roster: status lines and check boxes under each person's name ----------
+
+  // Each person's card ends with a full-width row: Consent & Release / screening / training on the left, and the
+  // "Include In Team Roster Printout" (and Leadership Award submitter) check boxes on the right. For youth it comes
+  // after the parent/guardian row, so every youth card had three rows. Move that row's contents into the empty space
+  // under the person's name (for youth, the empty first column of the parent row, which sits right under the name).
+  // The site's handlers find the person through the whole card (.roster-contact-card), so moving within it is safe.
+  function initRosterCompact() {
+    const box = document.getElementById('acct-roster-accordion');
+    if (!box) return;
+    let active = false;
+    const moved = []; // { row, parts, stack } so switching off can put everything back exactly
+
+    function compact() {
+      for (const card of box.querySelectorAll('.roster-contact-card')) {
+        const row = card.querySelector('.roster-status-row');
+        if (!row || row.classList.contains('dplus-emptied') || !row.children.length) continue;
+        // The name's column (on youth cards the name has its own centred box inside it; go below that box).
+        const nameSlot = card.querySelector('.roster-card-name')?.closest('[class*="col-"]');
+        if (!nameSlot) continue;
+        // Youth cards have a parent/guardian row whose first column is empty and sits right under the name.
+        const parentRow = card.querySelector('.roster-parent-row');
+        const gap = parentRow && parentRow.firstElementChild;
+        const gapSlot = gap && !gap.textContent.trim() && !gap.children.length ? gap : null;
+        const parts = [...row.children];
+        const [lines, ...boxes] = parts;
+        // Status lines go under the name; the check boxes go in the parent row's empty column when there is one (so
+        // the two sit side by side with what is already there instead of adding height), else under the lines.
+        const stacks = [];
+        const put = (slot, nodes) => {
+          if (!nodes.length) return;
+          const stack = el('div', { class: 'dplus-status-stack' });
+          stack.append(...nodes);
+          slot.append(stack);
+          stacks.push(stack);
+        };
+        if (gapSlot) { put(nameSlot, [lines]); put(gapSlot, boxes); } else put(nameSlot, parts);
+        row.classList.add('dplus-emptied');
+        moved.push({ row, parts, stacks });
+      }
+    }
+
+    function restore() {
+      for (const m of moved.splice(0)) {
+        if (m.row.isConnected) m.row.append(...m.parts);
+        m.stacks.forEach((s) => s.remove());
+        m.row.classList.remove('dplus-emptied');
+      }
+    }
+
+    // The roster is redrawn whenever it loads or reloads; catch new cards as they appear.
+    const watcher = new MutationObserver(later(() => { if (active) compact(); }, 100));
+    feature({
+      on() { active = true; watcher.observe(box, { childList: true, subtree: true }); compact(); },
+      off() { active = false; watcher.disconnect(); restore(); },
+    });
   }
 
   // ---------- sidebar: one button per persona, instead of going through "Switch Persona" ----------
@@ -579,7 +755,23 @@
     const home = document.getElementById('dashboard-select');
     const cards = document.querySelectorAll('.get-role-selection > div[data-application]');
     if (!home || !cards.length || document.getElementById('dplus-personas')) return;
+    const switcher = document.getElementById('role-select');
+    let group = null; // built the first time Dashboard+ is on; kept (detached) while off, so switching back is instant
 
+    feature({
+      on() {
+        if (!group) group = buildPersonaButtons(home);
+        else { home.after(group); group.__mark(); }
+        if (switcher) switcher.style.display = 'none';
+      },
+      off() {
+        if (group) group.remove();
+        if (switcher) switcher.style.display = '';
+      },
+    });
+  }
+
+  function buildPersonaButtons(home) {
     const current = () => { try { return localStorage.getItem('SelectedApp'); } catch (e) { return null; } };
     const group = el('div', { id: 'dplus-personas' });
     const buttons = {};
@@ -621,7 +813,6 @@
     moreLabel);
     group.append(more);
     home.after(group);
-    if (switcher) switcher.style.display = 'none';
 
     function toggleMore(force) {
       const open = typeof force === 'boolean' ? force : !group.classList.contains('dplus-show-all');
@@ -651,8 +842,11 @@
       if (remembered[app] === 'yes' || remembered[app] === 'no') button.dataset.dplusEmpty = remembered[app];
     }
     mark();
+    group.__mark = mark;
     // The site's own cards and "Switch Persona" also change the persona.
-    document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('.get-role-selection > div')) setTimeout(mark, 0); });
+    document.addEventListener('click', (e) => {
+      if (group.isConnected && e.target.closest && e.target.closest('.get-role-selection > div')) setTimeout(mark, 0);
+    });
 
     // Hide personas with nothing in them. One at a time, after the page has settled.
     (async () => {
@@ -677,10 +871,14 @@
       }
       mark();
     })();
+    return group;
   }
 
   initSlowLoads();
+  initFrameFit();
+  initTabNotice();
   initPersonaButtons();
   initTeamList();
   initRoster();
+  initRosterCompact();
 })();

@@ -55,11 +55,24 @@ Options menu.
 ### Layout fixes
 
 **Team pages**
+- **Tighter header:** the area from "Return to Dashboard" to the four tabs is about a third shorter. The team details,
+  Event Ready badge and "My team is participating" share one line, the Storefront button lines up with the team name,
+  and the tabs, Storefront button and each tab's content all end at the same right edge. FIRST's red task tooltip
+  above the active tab gets room of its own instead of covering the line above.
 - Each tab's content lines up with the team name and tabs above it, instead of sitting 15px to the left.
+- **Shorter roster cards:** each person's Consent & Release, screening and training lines move under their name, and
+  the "Include In Team Roster Printout" / award submitter check boxes move into the empty space beside the
+  parent/guardian details. Cards are about a quarter shorter, so a large roster takes far less scrolling.
+- **One scroll area:** an open team page fills the window below the header and the footer is hidden, so only the team
+  page scrolls. Before, the Dashboard around it scrolled too, and the site's pop-ups (Invite, Send C&R reminder…)
+  could end up hidden under the header.
 - The **Team Roster** tab fills the page width like the other tabs, and its Expand All row lines up with the heading.
 - Drop-downs (Country, Region, Sponsor type…) match the text boxes beside them in font, inset and border.
+- On the roster, parent/guardian names use the same font as every other name (the site styled them as larger grey labels).
 - Checkboxes in **Communication & Mentoring** (and similar sections) sit beside their labels, not above them.
 - "My team is participating" and its **Secured for this season** badge sit on one line.
+- **Sponsors** and **School/Organization**: the "Sponsor 1" heading column is narrow, so the fields get the width (it took a third of the card).
+- The three mentoring checklists ("willing to mentor", "areas", "need mentoring in") are spaced the same.
 - A lone sponsor no longer shows a "swap down" arrow with nothing to swap with.
 - The task tooltip over the first team tab is no longer cut off.
 - The older roster wizard no longer draws its "Create New Team" header and step bar twice.
@@ -71,14 +84,22 @@ Options menu.
 - **Volunteer Information**: the diet restriction buttons sit on an even grid instead of a ragged patchwork.
 - The sidebar persona marker clears when you're on Youth Protection, My Account and other non-dashboard pages.
 
+### Switch it off and on
+
+Click the Dashboard+ icon (the FIRST triangle-circle-square mark) in Chrome's toolbar to turn everything off and see the Dashboard exactly as
+FIRST draws it; click again to turn it back on. No reload needed, and an **OFF** badge shows while it's off. A bulk
+accept or reminder run that has already started finishes before the panel goes away.
+
 ## Install
 
 1. Download or clone this repo.
 2. Open `chrome://extensions` and turn on **Developer mode** (top right).
 3. **Load unpacked** → choose the `dashboard-plus` folder.
-4. Reload the Dashboard.
+4. Pin the Dashboard+ icon (the FIRST mark) from the puzzle-piece menu so the on/off button stays on the toolbar.
+5. Reload the Dashboard.
 
-To update, replace the files, press the reload arrow on the extension's card, and reload the Dashboard.
+To update, replace the files, press the reload arrow on the extension's card, and reload the Dashboard. The only
+permission it asks for is storage, to remember whether it's switched on.
 
 ## Good to know
 

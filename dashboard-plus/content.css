@@ -1,340 +1,445 @@
 /* Dashboard+ — layout fixes for the site, then styles for what Dashboard+ adds. */
 
-/* ---------- fixes ---------- */
+/* Every rule applies only while Dashboard+ is switched on (bridge.js sets data-dplus on <html>; the toolbar button
+   flips it). Rules are nested so turning Dashboard+ off restores the site exactly as it was, without a reload. */
+html[data-dplus="on"] {
 
-/* Checkbox sat on its own line above its label. The site sets flex-direction, align-items and gap on
-   .participation-section but never display:flex (except for the copy in the page header). */
-.participation-section {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 8px;
-}
-.participation-section > span:empty { display: none; }
-.participation-section > input[type="checkbox"] {
-  flex: 0 0 auto;
-  width: 16px !important;
-  height: 16px !important; /* the site makes these 27px tall, which pushes the box below its label */
-  min-height: 0;
-  margin: 1px 0 0 !important;
-}
-.participation-section > label {
-  flex: 0 1 auto;
-  margin: 0;
-  line-height: 18px;
-}
-/* The team page header's "My team is participating" row uses the same class and adds a taller "Secured for this
-   season" badge: centre everything on one line there instead of pinning it to the top. */
-.participation-section:has(> .season-secured-badge) { align-items: center !important; }
-.participation-section:has(> .season-secured-badge) > input[type="checkbox"] { margin: 0 !important; }
+  /* ---------- fixes ---------- */
 
-/* The reason tooltip above the first tab was centred on the tab and ran off the left edge of the window. */
-.tabs-group > .team-tab-container:first-child > .outstanding-notification {
-  left: 0;
-  transform: none;
-}
-.tabs-group > .team-tab-container:first-child > .outstanding-notification::after {
-  left: 40px;
-  transform: none;
-}
-
-/* The older roster wizard (/Teams/Wizard/TeamContacts/<step>) draws its "Create New Team" title, program line and
-   step bar twice: once across the top, and again inside the narrow left side-menu column, where the step labels
-   overlap and run into the main content. Hide the copy in the side-menu; its Express/Invitations links stay. */
-.sidenav > .container-fluid > div:has(> h1),
-.sidenav > .container-fluid > div:has(> .FIRSTProgram),
-.sidenav > .container-fluid > br,
-.sidenav .stepper {
-  display: none !important;
-}
-
-/* Team page: the body under the tabs is a Bootstrap .row, whose -15px side margins put every tab's content 15px to the
-   left of the team name, tabs and buttons above it. */
-.team-content.row.p-lr-50 {
-  margin-left: 0;
-  margin-right: 0;
-}
-
-/* Team Roster tab: the roster sits in a column flexbox without a width, so it shrank to its contents and stopped
-   short of the right edge that the other tabs reach. */
-.team-content > #acct-roster-accordion { align-self: stretch; }
-/* Its Expand All / Close All / Printable Roster row started 16px in from the heading above it. */
-#acct-roster-accordion > div:has(> .btn-cancel) > :first-child { margin-left: 0; }
-
-/* Team Information and Finances: drop-downs (Country, Region, School/Organization type, Sponsor type, season) used a
-   smaller font, a different inset, border and corner radius than the text boxes next to them. */
-.accordion-body-custom select.ds-select__field {
-  font-size: 16px;
-  padding-left: 12px;
-  border-color: rgb(226, 232, 240);
-  border-radius: 6px;
-}
-
-/* Sponsors: the last (or only) sponsor showed a lone "swap down" arrow that has nothing to swap with. */
-#section-partner > .accordion-body-section2:last-child .glyphicon-arrow-down { display: none; }
-
-/* My Profile: the Middle Name / Preferred First Name and Country / Postal Code rows split 7/5 while the rows around
-   them split 6/6, so the second column jumped left and right down the form. */
-@media (min-width: 768px) {
-  .ds-profile-wizard-myprofile .form-group > .col-md-7:has(#MiddleName, #Country),
-  .ds-profile-wizard-myprofile .form-group > .col-md-5:has(#NickFirstName) {
-    width: 50%;
+  /* Checkbox sat on its own line above its label. The site sets flex-direction, align-items and gap on
+     .participation-section but never display:flex (except for the copy in the page header). */
+  .participation-section {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 8px;
   }
+  .participation-section > span:empty { display: none; }
+  .participation-section > input[type="checkbox"] {
+    flex: 0 0 auto;
+    width: 16px !important;
+    height: 16px !important; /* the site makes these 27px tall, which pushes the box below its label */
+    min-height: 0;
+    margin: 1px 0 0 !important;
+  }
+  .participation-section > label {
+    flex: 0 1 auto;
+    margin: 0;
+    line-height: 18px;
+  }
+  /* The team page header's "My team is participating" row uses the same class and adds a taller "Secured for this
+     season" badge: centre everything on one line there instead of pinning it to the top. */
+  .participation-section:has(> .season-secured-badge) { align-items: center !important; }
+  .participation-section:has(> .season-secured-badge) > input[type="checkbox"] { margin: 0 !important; }
+
+  /* The reason tooltip above the first tab was centred on the tab and ran off the left edge of the window. */
+  .tabs-group > .team-tab-container:first-child > .outstanding-notification {
+    left: 0;
+    transform: none;
+  }
+  .tabs-group > .team-tab-container:first-child > .outstanding-notification::after {
+    left: 40px;
+    transform: none;
+  }
+
+  /* The older roster wizard (/Teams/Wizard/TeamContacts/<step>) draws its "Create New Team" title, program line and
+     step bar twice: once across the top, and again inside the narrow left side-menu column, where the step labels
+     overlap and run into the main content. Hide the copy in the side-menu; its Express/Invitations links stay. */
+  .sidenav > .container-fluid > div:has(> h1),
+  .sidenav > .container-fluid > div:has(> .FIRSTProgram),
+  .sidenav > .container-fluid > br,
+  .sidenav .stepper {
+    display: none !important;
+  }
+
+  /* Team page header (Return to Dashboard down to the four tabs), tightened from about 360px to about 230px:
+     - 25px gaps between its blocks → 14px;
+     - the Event Ready badge sat in a 20px-padded grey box that made the Veteran / city / district line 76px tall;
+     - "My team is participating" had a line of its own; it now follows the district on the same line (wrapping on
+       narrow windows);
+     - the Storefront button lines up with the team name instead of the top of the block;
+     - the tab row stopped 80px short of the right edge (as did each tab's content), unlike the Storefront button and
+       the roster; both now run to the same edge, the four tabs share the width evenly, and they are a little shorter. */
+  .team-details-header {
+    gap: 14px;
+
+    .team-header-btns { margin-top: 14px; }
+    .team-header-details {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      column-gap: 28px;
+      row-gap: 10px;
+    }
+    .team-header-details > .team-heading { flex: 1 0 100%; }
+    .team-header-details > .basic-info,
+    .team-header-details > .participation-section {
+      width: auto !important;
+      flex: 0 1 auto;
+    }
+    .event-ready-section { padding: 0; background: transparent; }
+
+    .tabs-group {
+      padding-right: 0;
+      gap: 16px;
+      /* Room for FIRST's red task tooltip above the active tab, sized by content.js (initTabNotice), so it no longer
+         covers the line above. */
+      margin-top: max(0px, calc(var(--dplus-notice, 0px) - 14px));
+    }
+    .tabs-group > .team-tab-container { flex: 1 1 0; }
+    .tab-btn { padding-top: 10px; padding-bottom: 10px; }
+  }
+  .team-content .accordion-custom { padding-right: 0; }
+
+  /* Team page: the body under the tabs is a Bootstrap .row, whose -15px side margins put every tab's content 15px to the
+     left of the team name, tabs and buttons above it. */
+  .team-content.row.p-lr-50 {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Team Roster tab: the roster sits in a column flexbox without a width, so it shrank to its contents and stopped
+     short of the right edge that the other tabs reach. */
+  .team-content > #acct-roster-accordion { align-self: stretch; }
+  /* Its Expand All / Close All / Printable Roster row started 16px in from the heading above it. */
+  #acct-roster-accordion > div:has(> .btn-cancel) > :first-child { margin-left: 0; }
+
+  /* Roster, youth rows: the parent/guardian's name is wrapped in a <label>, so the site's label style made it larger and
+     grey, unlike every other name on the roster. Match the plain 13px text around it. */
+  /* Dashboard with a team or Profile page open (content.js, initFrameFit): the frame fills the space between the fixed
+     header and the bottom of the window, and the footer is hidden, so the page in the frame is the only thing that
+     scrolls and the site's pop-ups inside it stay in view. */
+  &.dplus-frame-open {
+    .body-main-content {
+      min-height: 0 !important;
+      height: calc(100vh - var(--dplus-header, 113px)) !important;
+    }
+    .body-section-content { min-height: 0 !important; }
+    #footer { display: none !important; }
+    body { overflow: hidden; }
+  }
+
+  /* Roster: each person's status lines and check boxes, moved under their name by content.js (initRosterCompact). */
+  .roster-status-row.dplus-emptied { display: none; }
+  .dplus-status-stack { margin-top: 4px; }
+  .dplus-status-stack > [class*="col-"] {
+    float: none;
+    width: auto;
+    padding: 0;
+    text-align: left !important;
+    line-height: 18px; /* the roster's columns use a 31px line height, which doubled the height of these lines */
+    min-height: 0;
+  }
+  .dplus-status-stack .ds-text-body { font-size: 12px; line-height: 18px; }
+  .dplus-status-stack > [class*="col-"] > div {
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+  /* The youth template right-aligns its check box column. */
+  .dplus-status-stack .flex-column-end { align-items: flex-start !important; }
+  .dplus-status-stack .roster-printout-check {
+    justify-content: flex-start !important;
+    font-size: 12px;
+    text-align: left;
+  }
+  .roster-parent-row .dplus-status-stack { margin-top: 0; }
+
+  .roster-parent-row label#LegalGuardian {
+    font: inherit;
+    color: inherit;
+    margin: 0;
+  }
+
+  /* Team Information and Finances: drop-downs (Country, Region, School/Organization type, Sponsor type, season) used a
+     smaller font, a different inset, border and corner radius than the text boxes next to them. */
+  .accordion-body-custom select.ds-select__field {
+    font-size: 16px;
+    padding-left: 12px;
+    border-color: rgb(226, 232, 240);
+    border-radius: 6px;
+  }
+
+  /* Mentoring: in "What area(s) do you need mentoring in?" each option is a <label> (a <div> in the two groups above
+     it), so the site's label style added 5px under every row and that group was spaced differently. */
+  label.participation-section {
+    margin-bottom: 0 !important;
+    font-weight: inherit;
+  }
+
+  /* School/Organization and Sponsors: each entry was split a third / two thirds, so the "Sponsor 1" heading took a
+     third of the card and squeezed the fields. Give the heading a fixed narrow column and the fields the rest. */
+  @media (min-width: 768px) {
+    .accordion-body-section2 > .col-sm-4:first-child { width: 200px; }
+    .accordion-body-section2 > .accordion-right-section { width: calc(100% - 200px); }
+  }
+
+  /* Sponsors: the last (or only) sponsor showed a lone "swap down" arrow that has nothing to swap with. */
+  #section-partner > .accordion-body-section2:last-child .glyphicon-arrow-down { display: none; }
+
+  /* My Profile: the Middle Name / Preferred First Name and Country / Postal Code rows split 7/5 while the rows around
+     them split 6/6, so the second column jumped left and right down the form. */
+  @media (min-width: 768px) {
+    .ds-profile-wizard-myprofile .form-group > .col-md-7:has(#MiddleName, #Country),
+    .ds-profile-wizard-myprofile .form-group > .col-md-5:has(#NickFirstName) {
+      width: 50%;
+    }
+  }
+
+  /* My Invitations/Roles sits 35px further left than the other Profile tabs (My Profile, Acknowledgement Forms, ...),
+     so the title and tab bar jump sideways when switching to it. */
+  .ds-roles-invitation-page .ds-profile-wizard-main {
+    padding-left: 55px;
+    padding-right: 55px;
+  }
+
+  /* Volunteer Information: the Diet Restrictions / Allergies buttons sat in Bootstrap columns of different widths
+     (2, 4, 4, 4, 2, 4 ...), so they formed a ragged patchwork. Put them on an even grid. */
+  .race-block:has(.pif-AllergyList-btn) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    padding: 0 15px; /* the inset the columns used to give, so the buttons line up with the fields below */
+  }
+  .race-block:has(.pif-AllergyList-btn) > * {
+    width: auto !important;
+    float: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .race-block:has(.pif-AllergyList-btn) > :not(:has(.pif-AllergyList-btn)) { grid-column: 1 / -1; }
+  .race-block .pif-AllergyList-btn { width: 100%; }
+
+  /* Dashboard tables (team list and the like): every column has a 7px margin on each side that the site's percentage
+     widths do not allow for, so the last column ("Participating Team") ran past the table's right edge. Let the columns
+     shrink to fit and the header text wrap. */
+  .table-header > .header-cell,
+  .table-row > .row-cell {
+    flex-shrink: 1 !important;
+    min-width: 0;
+  }
+  .table-header > .header-cell.center .header-cell-text { text-align: center; }
+  .row-cell-sub-cell.dplus-merged[hidden] { display: none !important; }
+
+  /* ---------- team list: reasons under a team's badges ---------- */
+
+  .dplus-reasons {
+    margin: 0;
+    padding: 6px 16px 8px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #fbf7f7;
+    font-size: 13px;
+    line-height: 20px;
+    color: #1a1a1a;
+  }
+  /* dot | reason + tag | holds up (one line, cut off) | Fix */
+  .dplus-reason {
+    display: grid;
+    grid-template-columns: 8px minmax(0, 46%) minmax(0, 1fr) 44px;
+    align-items: center;
+    column-gap: 10px;
+    padding: 3px 0;
+  }
+  .dplus-reasons.dplus-nofix .dplus-reason { grid-template-columns: 8px minmax(0, 46%) minmax(0, 1fr); }
+  .dplus-reason + .dplus-reason { border-top: 1px dashed #ecdede; }
+  .dplus-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #c8102e;
+  }
+  .dplus-reason-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 8px;
+    min-width: 0;
+  }
+  .dplus-reason-text { font-weight: 600; }
+  .dplus-tag {
+    padding: 0 6px;
+    border-radius: 4px;
+    background: #c8102e;
+    color: #fff;
+    font-size: 10px;
+    line-height: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+  .dplus-areas {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: #6b7280;
+    font-size: 12px;
+  }
+  .dplus-link {
+    justify-self: end;
+    width: 44px;
+    padding: 0;
+    border: 1px solid var(--ds-color-primary, #0066b3);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--ds-color-primary, #0066b3);
+    font: inherit;
+    font-size: 12px;
+    line-height: 20px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .dplus-link:hover { background: var(--ds-color-primary, #0066b3); color: #fff; }
+
+  /* ---------- sidebar persona buttons ---------- */
+
+  #dplus-personas {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+  }
+  .sidebar:not(.collapsed) #dplus-personas .dplus-persona {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 28px;
+  }
+  .dplus-persona[hidden] { display: none !important; }
+  /* "More…" reveals the personas hidden as empty. */
+  #dplus-personas.dplus-show-all .dplus-persona:not(.dplus-more)[hidden] { display: flex !important; opacity: 0.75; }
+  .dplus-more .menu-item-label { color: #5c6470; }
+  .dplus-persona .side-menu-icon {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border-radius: 50%;
+  }
+  .dplus-persona .menu-item-label { font-size: 14px; }
+  .dplus-persona.dplus-current { box-shadow: inset 3px 0 0 var(--ds-color-primary, #0066b3); }
+  .dplus-persona.dplus-current .menu-item-label { font-weight: 700; }
+  /* On Youth Protection, My Account and the other sidebar pages, no persona is being shown: drop the marker. */
+  #dashboard-select:not(.active-menu) + #dplus-personas .dplus-current { box-shadow: none; }
+  #dashboard-select:not(.active-menu) + #dplus-personas .dplus-current .menu-item-label { font-weight: inherit; }
+  .dplus-persona:focus-visible { outline: 2px solid var(--ds-color-primary, #0066b3); outline-offset: -2px; }
+  .sidebar.collapsed .dplus-persona { justify-content: center; }
+  .sidebar.collapsed .dplus-persona img { margin: auto; }
+
+  /* "Opening the page…" (a Fix link's page loading in the Dashboard's hidden frame) and "Loading the roster…". */
+  .dplus-wait {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 24px;
+    padding: 14px 16px;
+    border: 1px solid #c9d7e8;
+    border-radius: 8px;
+    background: #f5f9ff;
+    font-size: 14px;
+    line-height: 1.45;
+    color: #1a1a1a;
+  }
+  .dplus-spinner {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #c9d7e8;
+    border-top-color: var(--ds-color-primary, #0066b3);
+    border-radius: 50%;
+    animation: dplus-spin 0.9s linear infinite;
+  }
+  /* Inside a team page tab (a column flexbox), take the full width and line up with the tab's content. */
+  .team-content > .dplus-wait {
+    align-self: stretch;
+    margin: 16px 0;
+  }
+
+  /* ---------- roster panel ---------- */
+
+  #dplus-roster-panel {
+    margin: 16px 0;
+    padding: 14px 16px;
+    border: 1px solid #c9d7e8;
+    border-radius: 8px;
+    background: #f5f9ff;
+    font-size: 14px;
+    line-height: 1.45;
+    color: #1a1a1a;
+  }
+  .dplus-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .dplus-badge {
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--ds-color-primary, #0066b3);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .dplus-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .dplus-stat {
+    padding: 6px 10px;
+    border: 1px solid #d9e2ee;
+    border-radius: 6px;
+    background: #fff;
+  }
+  .dplus-stat b { font-size: 16px; }
+  .dplus-stat.dplus-warn { border-color: #e0a100; background: #fff8e1; }
+  .dplus-note { margin: 0 0 10px; color: #3c4450; }
+  .dplus-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .dplus-btn {
+    padding: 7px 14px;
+    border: 1px solid var(--ds-color-primary, #0066b3);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--ds-color-primary, #0066b3);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .dplus-btn:hover:not(:disabled) { background: #e6f0fa; }
+  .dplus-btn.dplus-primary { background: var(--ds-color-primary, #0066b3); color: #fff; }
+  .dplus-btn.dplus-primary:hover:not(:disabled) { filter: brightness(0.92); background: var(--ds-color-primary, #0066b3); }
+  .dplus-btn:disabled { border-color: #c5ccd6; background: #eef1f5; color: #8a93a0; cursor: default; }
+  .dplus-outcome { color: #3c4450; }
+
+  .dplus-table {
+    width: 100%;
+    margin: 0 0 12px;
+    border-collapse: collapse;
+    background: #fff;
+  }
+  .dplus-table th,
+  .dplus-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #e3e8ef;
+    text-align: left;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+  }
+  .dplus-table th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; color: #5c6470; }
+  .dplus-table th:first-child,
+  .dplus-table td:first-child { width: 34px; }
+  .dplus-table input[type="checkbox"] { width: 16px; height: 16px; margin: 0; display: block; }
+  .dplus-group td { background: #eef3f9; font-weight: 700; }
+  .dplus-status { color: #5c6470; white-space: nowrap; }
+  .dplus-status.dplus-ok { color: #1b7a3d; font-weight: 600; }
+  .dplus-status.dplus-bad { color: #c8102e; font-weight: 600; white-space: normal; }
 }
 
-/* My Invitations/Roles sits 35px further left than the other Profile tabs (My Profile, Acknowledgement Forms, ...),
-   so the title and tab bar jump sideways when switching to it. */
-.ds-roles-invitation-page .ds-profile-wizard-main {
-  padding-left: 55px;
-  padding-right: 55px;
-}
-
-/* Volunteer Information: the Diet Restrictions / Allergies buttons sat in Bootstrap columns of different widths
-   (2, 4, 4, 4, 2, 4 ...), so they formed a ragged patchwork. Put them on an even grid. */
-.race-block:has(.pif-AllergyList-btn) {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 10px;
-  padding: 0 15px; /* the inset the columns used to give, so the buttons line up with the fields below */
-}
-.race-block:has(.pif-AllergyList-btn) > * {
-  width: auto !important;
-  float: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-.race-block:has(.pif-AllergyList-btn) > :not(:has(.pif-AllergyList-btn)) { grid-column: 1 / -1; }
-.race-block .pif-AllergyList-btn { width: 100%; }
-
-/* Dashboard tables (team list and the like): every column has a 7px margin on each side that the site's percentage
-   widths do not allow for, so the last column ("Participating Team") ran past the table's right edge. Let the columns
-   shrink to fit and the header text wrap. */
-.table-header > .header-cell,
-.table-row > .row-cell {
-  flex-shrink: 1 !important;
-  min-width: 0;
-}
-.table-header > .header-cell.center .header-cell-text { text-align: center; }
-.row-cell-sub-cell.dplus-merged[hidden] { display: none !important; }
-
-/* ---------- team list: reasons under a team's badges ---------- */
-
-.dplus-reasons {
-  margin: 0;
-  padding: 6px 16px 8px 24px;
-  border-bottom: 1px solid #e2e8f0;
-  background: #fbf7f7;
-  font-size: 13px;
-  line-height: 20px;
-  color: #1a1a1a;
-}
-/* dot | reason + tag | holds up (one line, cut off) | Fix */
-.dplus-reason {
-  display: grid;
-  grid-template-columns: 8px minmax(0, 46%) minmax(0, 1fr) 44px;
-  align-items: center;
-  column-gap: 10px;
-  padding: 3px 0;
-}
-.dplus-reasons.dplus-nofix .dplus-reason { grid-template-columns: 8px minmax(0, 46%) minmax(0, 1fr); }
-.dplus-reason + .dplus-reason { border-top: 1px dashed #ecdede; }
-.dplus-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #c8102e;
-}
-.dplus-reason-main {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 2px 8px;
-  min-width: 0;
-}
-.dplus-reason-text { font-weight: 600; }
-.dplus-tag {
-  padding: 0 6px;
-  border-radius: 4px;
-  background: #c8102e;
-  color: #fff;
-  font-size: 10px;
-  line-height: 16px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-}
-.dplus-areas {
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  color: #6b7280;
-  font-size: 12px;
-}
-.dplus-link {
-  justify-self: end;
-  width: 44px;
-  padding: 0;
-  border: 1px solid var(--ds-color-primary, #0066b3);
-  border-radius: 4px;
-  background: #fff;
-  color: var(--ds-color-primary, #0066b3);
-  font: inherit;
-  font-size: 12px;
-  line-height: 20px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.dplus-link:hover { background: var(--ds-color-primary, #0066b3); color: #fff; }
-
-/* ---------- sidebar persona buttons ---------- */
-
-#dplus-personas {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  width: 100%;
-}
-.sidebar:not(.collapsed) #dplus-personas .dplus-persona {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 28px;
-}
-.dplus-persona[hidden] { display: none !important; }
-/* "More…" reveals the personas hidden as empty. */
-#dplus-personas.dplus-show-all .dplus-persona:not(.dplus-more)[hidden] { display: flex !important; opacity: 0.75; }
-.dplus-more .menu-item-label { color: #5c6470; }
-.dplus-persona .side-menu-icon {
-  width: 20px;
-  height: 20px;
-  min-width: 20px;
-  border-radius: 50%;
-}
-.dplus-persona .menu-item-label { font-size: 14px; }
-.dplus-persona.dplus-current { box-shadow: inset 3px 0 0 var(--ds-color-primary, #0066b3); }
-.dplus-persona.dplus-current .menu-item-label { font-weight: 700; }
-/* On Youth Protection, My Account and the other sidebar pages, no persona is being shown: drop the marker. */
-#dashboard-select:not(.active-menu) + #dplus-personas .dplus-current { box-shadow: none; }
-#dashboard-select:not(.active-menu) + #dplus-personas .dplus-current .menu-item-label { font-weight: inherit; }
-.dplus-persona:focus-visible { outline: 2px solid var(--ds-color-primary, #0066b3); outline-offset: -2px; }
-.sidebar.collapsed .dplus-persona { justify-content: center; }
-.sidebar.collapsed .dplus-persona img { margin: auto; }
-
-/* "Opening the page…" (a Fix link's page loading in the Dashboard's hidden frame) and "Loading the roster…". */
-.dplus-wait {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 24px;
-  padding: 14px 16px;
-  border: 1px solid #c9d7e8;
-  border-radius: 8px;
-  background: #f5f9ff;
-  font-size: 14px;
-  line-height: 1.45;
-  color: #1a1a1a;
-}
-.dplus-spinner {
-  flex: 0 0 auto;
-  width: 20px;
-  height: 20px;
-  border: 3px solid #c9d7e8;
-  border-top-color: var(--ds-color-primary, #0066b3);
-  border-radius: 50%;
-  animation: dplus-spin 0.9s linear infinite;
-}
 @keyframes dplus-spin { to { transform: rotate(360deg); } }
-/* Inside a team page tab (a column flexbox), take the full width and line up with the tab's content. */
-.team-content > .dplus-wait {
-  align-self: stretch;
-  margin: 16px 0;
-}
-
-/* ---------- roster panel ---------- */
-
-#dplus-roster-panel {
-  margin: 16px 0;
-  padding: 14px 16px;
-  border: 1px solid #c9d7e8;
-  border-radius: 8px;
-  background: #f5f9ff;
-  font-size: 14px;
-  line-height: 1.45;
-  color: #1a1a1a;
-}
-.dplus-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-  font-size: 16px;
-  font-weight: 700;
-}
-.dplus-badge {
-  padding: 2px 7px;
-  border-radius: 4px;
-  background: var(--ds-color-primary, #0066b3);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-.dplus-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-.dplus-stat {
-  padding: 6px 10px;
-  border: 1px solid #d9e2ee;
-  border-radius: 6px;
-  background: #fff;
-}
-.dplus-stat b { font-size: 16px; }
-.dplus-stat.dplus-warn { border-color: #e0a100; background: #fff8e1; }
-.dplus-note { margin: 0 0 10px; color: #3c4450; }
-.dplus-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-.dplus-btn {
-  padding: 7px 14px;
-  border: 1px solid var(--ds-color-primary, #0066b3);
-  border-radius: 6px;
-  background: #fff;
-  color: var(--ds-color-primary, #0066b3);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-.dplus-btn:hover:not(:disabled) { background: #e6f0fa; }
-.dplus-btn.dplus-primary { background: var(--ds-color-primary, #0066b3); color: #fff; }
-.dplus-btn.dplus-primary:hover:not(:disabled) { filter: brightness(0.92); background: var(--ds-color-primary, #0066b3); }
-.dplus-btn:disabled { border-color: #c5ccd6; background: #eef1f5; color: #8a93a0; cursor: default; }
-.dplus-outcome { color: #3c4450; }
-
-.dplus-table {
-  width: 100%;
-  margin: 0 0 12px;
-  border-collapse: collapse;
-  background: #fff;
-}
-.dplus-table th,
-.dplus-table td {
-  padding: 6px 10px;
-  border-bottom: 1px solid #e3e8ef;
-  text-align: left;
-  vertical-align: middle;
-  overflow-wrap: anywhere;
-}
-.dplus-table th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; color: #5c6470; }
-.dplus-table th:first-child,
-.dplus-table td:first-child { width: 34px; }
-.dplus-table input[type="checkbox"] { width: 16px; height: 16px; margin: 0; display: block; }
-.dplus-group td { background: #eef3f9; font-weight: 700; }
-.dplus-status { color: #5c6470; white-space: nowrap; }
-.dplus-status.dplus-ok { color: #1b7a3d; font-weight: 600; }
-.dplus-status.dplus-bad { color: #c8102e; font-weight: 600; white-space: normal; }
