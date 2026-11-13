@@ -52,7 +52,8 @@ screenshot above), so there is no Switch Persona round-trip. Personas with nothi
 On a team's **Team Roster** tab, a row of tiles shows who is waiting for a decision and who is missing Consent & Release,
 screening or training — without scrolling through every person. Counts that need attention are highlighted, and the
 actions sit on the tiles they act on. **Show who** on the Screening and Training tiles lists the people behind the count;
-click a name to jump to their card on the roster.
+click a name to jump to their card on the roster. Roster cards of people missing Consent & Release, screening or
+training are highlighted in the same amber, with what's missing on hover.
 
 ![Roster summary with counts for applicants, missing Consent & Release, screening and training](docs/roster-at-a-glance.png)
 
@@ -78,20 +79,26 @@ Options menu.
 - Each tab's content lines up with the team name and tabs above it, instead of sitting 15px to the left.
 - **Shorter roster cards:** each person's Consent & Release, screening and training lines move under their name, and
   the "Include In Team Roster Printout" / award submitter check boxes move into the empty space beside the
-  parent/guardian details. Cards are about a quarter shorter, so a large roster takes far less scrolling.
+  parent/guardian details. Cards are about a quarter shorter, so a large roster takes far less scrolling. On coach and
+  mentor cards the status lines run under both the name and "Full legal name" columns instead of wrapping in one.
 - **One scroll area:** an open team page fills the window below the header and the footer is hidden, so only the team
-  page scrolls. Before, the Dashboard around it scrolled too, and the site's pop-ups (Invite, Send C&R reminder…)
+  page scrolls (never two scrollbars side by side). Before, the Dashboard around it scrolled too, and the site's pop-ups (Invite, Send C&R reminder…)
   could end up hidden under the header.
 - The **Team Roster** tab fills the page width like the other tabs, and its Expand All row lines up with the heading.
 - Drop-downs (Country, Region, Sponsor type…) match the text boxes beside them in font, inset and border.
 - On the roster, parent/guardian names use the same font as every other name (the site styled them as larger grey labels).
-- **Team Events and Awards**: the Drop Event button fits its column, voucher expiration dates no longer split the year
-  onto its own line, and the Passwords/Voucher Codes headings no longer break mid-word.
+- **Team Events and Awards**: the Event List's columns are rebalanced (each event takes about half the height, and the
+  venue address no longer runs to five lines), the Drop Event button fits its column, voucher expiration dates no
+  longer split the year onto its own line, the voucher NOTICE box is evenly padded with its icon centred, and the
+  Passwords/Voucher Codes headings no longer break mid-word.
 - Button rows under each tab heading wrap evenly in a narrow window, and the **Awards List** tiles sit two or three to a row
   instead of one full-width tile per row.
 - Checkboxes in **Communication & Mentoring** (and similar sections) sit beside their labels, not above them.
 - "My team is participating" and its **Secured for this season** badge sit on one line.
-- **Sponsors** and **School/Organization**: the "Sponsor 1" heading column is narrow, so the fields get the width (it took a third of the card).
+- **Titles above content:** School/Organization, Sponsors, Financial Guarantor and Season Specific (Robot Name, the
+  voucher tables) put each entry's title in a side column that took a third of the card; titles are now headings above
+  their content, which gets the full width. Entries are separated by a rule, their remove/reorder/info icons sit on
+  the title line, and "Robot Name" is no longer shown twice.
 - The three mentoring checklists ("willing to mentor", "areas", "need mentoring in") are spaced the same.
 - A lone sponsor no longer shows a "swap down" arrow with nothing to swap with.
 - **Print Prior Season Roster** is hidden when FIRST has disabled it for your account (it gave no reason on some teams).
@@ -99,8 +106,14 @@ Options menu.
 - The older roster wizard no longer draws its "Create New Team" header and step bar twice.
 
 **Elsewhere**
+- **No header bar:** the FIRST logo moves to the top of the sidebar (just the mark when the sidebar is collapsed), and
+  the 113px bar that held it is gone, so every page starts at the top of the window.
+- While a section of a team page shows its own "Loading…" message, the Dashboard's whole-window loading veil stays
+  away, so the rest of the page stays usable.
 - The banner photo at the top of the Dashboard keeps its proportions instead of stretching with the window.
 - The team list's **Participating Team** column no longer runs off the edge at narrow widths.
+- **Profile pages** (My Profile, Demographics, Volunteer Information…): section titles such as "Contact Information"
+  sit above their fields instead of in a side column, so the fields get the full width.
 - **My Profile**: the second column of fields lines up all the way down the form.
 - **My Invitations/Roles** lines up with the other Profile tabs instead of jumping sideways.
 - **Volunteer Information**: the diet restriction buttons sit on an even grid instead of a ragged patchwork.

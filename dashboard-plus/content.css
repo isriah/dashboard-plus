@@ -81,7 +81,7 @@ html[data-dplus="on"] {
     .tabs-group {
       padding-right: 0;
       gap: 16px;
-      /* Room for FIRST's red task tooltip above the active tab, sized by content.js (initTabNotice), so it no longer
+      /* Room for FIRST's red task tooltip above the active tab, sized by team-page.js (initTabNotice), so it no longer
          covers the line above. */
       margin-top: max(0px, calc(var(--dplus-notice, 0px) - 14px));
     }
@@ -143,15 +143,106 @@ html[data-dplus="on"] {
     white-space: nowrap;
   }
   .row-col-exp > .row-chev { flex: 0 0 auto; width: auto !important; padding: 0 !important; }
-  /* The section headings ("Current Season Passwords/Voucher Codes", "Robot Name") were squeezed into a quarter-width
-     column that broke words mid-way ("Vouche / r"). Same treatment as School/Organization and Sponsors: a 250px
-     heading column, the rest for the content, and no mid-word breaks. */
-  @media (min-width: 768px) {
-    .row.full-width:has(> .col-md-3 > .section-title):has(> .col-md-9) { display: flex; align-items: flex-start; }
-    .row.full-width:has(> .col-md-3 > .section-title) > .col-md-3 { flex: 0 0 250px; width: 250px; max-width: none; }
-    .row.full-width:has(> .col-md-3 > .section-title) > .col-md-9 { flex: 1 1 auto; width: auto; max-width: none; min-width: 0; }
-  }
+  /* The voucher NOTICE banner: the icon's 20px top/bottom margins stretched the box, leaving a gap under the text and
+     the icon sitting below the text's middle. Centre both and keep only the side margins. */
+  .notice-banner.notice-bar { align-items: center !important; }
+  .notice-banner.notice-bar > .season-notice-icon { margin: 0 5px !important; line-height: 0; }
   .section-title { word-break: normal; overflow-wrap: break-word; }
+
+  /* Cards that put each entry's title in a side column took up a lot of room for a few words and squeezed the
+     content (and broke titles mid-word): Season Specific ("Robot Name", "Current/Prior Season Passwords/Voucher
+     Codes"), School/Organization, Sponsors ("Sponsor 1"…), Financial Guarantor. Put the title above its content as a
+     heading, and give the content the full width of the card. */
+  .row.full-width:has(> .col-md-3 > .section-title) {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch !important;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .row.full-width:has(> .col-md-3 > .section-title) > [class*="col-"],
+  .accordion-body-section2:has(> .accordion-right-section) > [class*="col-"],
+  .row:has(> .col-md-4 > h3.ds-text-h3) > [class*="col-"] {
+    float: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    flex: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .row.full-width:has(> .col-md-3 > .section-title) > .col-md-3,
+  .accordion-body-section2:has(> .accordion-right-section) > .col-sm-4:first-child,
+  .row:has(> .col-md-4 > h3.ds-text-h3) > .col-md-4 {
+    margin-bottom: 14px;
+  }
+  .row:has(> .col-md-4 > h3.ds-text-h3) { margin-left: 0; margin-right: 0; }
+  /* The site lays each School/Organization and Sponsor entry out as a flex row; stack its two halves instead
+     (otherwise, at full width each, the fields were pushed off the right-hand edge). */
+  .accordion-body-section2:has(> .accordion-right-section) { display: block !important; }
+
+  /* With titles above their fields, consecutive entries (Sponsor 1, Sponsor 2…, School/Organization 1, 2…) ran
+     together as one long form. Separate each entry with a rule and some space. */
+  .accordion-body-section2:has(> .accordion-right-section) { position: relative; }
+  /* (The site makes the fields column a positioned box; let the controls below line up with the entry instead.) */
+  .accordion-body-section2 > .accordion-right-section { position: static !important; }
+  .accordion-body-section2:has(> .accordion-right-section) + .accordion-body-section2:has(> .accordion-right-section) {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e3e8ef;
+  }
+  /* Each entry's controls (reorder arrows, remove ×, info ⓘ) sat on a line of their own under the title: move them to
+     the right-hand end of the title line, where it is clear which entry they belong to. */
+  .accordion-body-section2 > .accordion-right-section > .w-100:first-child {
+    position: absolute;
+    top: 2px;
+    right: 0;
+    width: auto !important;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .accordion-body-section2 + .accordion-body-section2 > .accordion-right-section > .w-100:first-child { top: 22px; }
+  .accordion-body-section2 > .accordion-right-section > .w-100:first-child > * {
+    float: none !important;
+    width: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .accordion-body-section2 > .accordion-right-section > .w-100:first-child .close { font-size: 22px; line-height: 1; }
+  .accordion-body-section2:has(> .accordion-right-section) > .col-sm-4:first-child { padding-right: 90px !important; }
+
+  /* Season Specific: "Robot Name" was both the heading and the field's label ("ROBOT NAME*"). Keep the heading (with
+     the required star) and hide the duplicate label from view; it stays readable to screen readers. */
+  .robot-label-wrapper > .robot-label {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .row.full-width:has(.robot-label) .section-title::after {
+    content: " *";
+    color: #c8102e;
+  }
+
+  /* Team Events and Awards → Event List: six equal columns crammed the venue address onto five lines while Status and
+     Action had room to spare. Rebalance: Status wide enough for "REGISTERED" at half width; narrower Type; wider Venue. */
+  #event-list .tbl-hd > .tbl-hd-rw,
+  #event-list .tbl-bd-rw > .tbl-bd-rw-col { max-width: none !important; }
+  #event-list .tbl-hd > .tbl-hd-rw:nth-of-type(1), #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(1) { flex: 0 0 13% !important; width: 13% !important; }
+  #event-list .tbl-hd > .tbl-hd-rw:nth-of-type(2), #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(2) { flex: 0 0 20% !important; width: 20% !important; }
+  #event-list .tbl-hd > .tbl-hd-rw:nth-of-type(3), #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(3) { flex: 0 0 14% !important; width: 14% !important; }
+  #event-list .tbl-hd > .tbl-hd-rw:nth-of-type(4), #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(4) { flex: 0 0 12% !important; width: 12% !important; }
+  #event-list .tbl-hd > .tbl-hd-rw:nth-of-type(5), #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(5) { flex: 0 0 27% !important; width: 27% !important; }
+  #event-list .tbl-hd > .tbl-hd-rw:nth-of-type(6), #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(6) { flex: 0 0 14% !important; width: 14% !important; }
+
+  /* Profile pages (My Profile, Demographics, Volunteer Information…): each section's title ("Contact Information"…)
+     sat in a 218px column beside the fields, like the team page cards did. Title above, fields at full width. */
+  .ds-profile-x-panel-split { grid-template-columns: minmax(0, 1fr) !important; }
+  .ds-profile-x-panel-split > * { grid-column: 1 / -1 !important; grid-row: auto !important; }
+  .ds-profile-x-panel-split > .section_header { margin-bottom: 12px; width: auto !important; }
+  .ds-profile-x-panel-split > .x_content { float: none !important; width: 100% !important; margin-left: 0 !important; }
 
   /* Team Events and Awards → Awards List: the award tiles went one per row (each the full width) in a narrow window.
      Lay them out on a grid: three across when there is room, two when narrower, one only when very narrow. */
@@ -176,10 +267,14 @@ html[data-dplus="on"] {
 
   /* Roster, youth rows: the parent/guardian's name is wrapped in a <label>, so the site's label style made it larger and
      grey, unlike every other name on the roster. Match the plain 13px text around it. */
-  /* Dashboard with a team or Profile page open (content.js, initFrameFit): the frame fills the space between the fixed
+  /* Dashboard with a team or Profile page open (dashboard.js, initFrameFit): the frame fills the space between the fixed
      header and the bottom of the window, and the footer is hidden, so the page in the frame is the only thing that
      scrolls and the site's pop-ups inside it stay in view. */
   &.dplus-frame-open {
+    /* The site sets overflow-y:auto on <html> itself, so hiding overflow on <body> alone did not remove the window's
+       scrollbar; and the page came out a pixel taller than the window, which was enough to show it next to the team
+       page's own. Lock the window itself so there is only ever the one scrollbar, however the heights round. */
+    overflow: hidden !important;
     .body-main-content {
       min-height: 0 !important;
       height: calc(100vh - var(--dplus-header, 113px)) !important;
@@ -189,7 +284,7 @@ html[data-dplus="on"] {
     body { overflow: hidden; }
   }
 
-  /* Finances → Payment History: until the first answer arrives (content.js, initPaymentHistory), hide the site's
+  /* Finances → Payment History: until the first answer arrives (finances.js, initPaymentHistory), hide the site's
      placeholder "Total amount paid: $0.00" and "Payment records not available", which looked like a real result. */
   #payment-history:not(.dplus-ph-done) .total-amount-paid,
   #payment-history:not(.dplus-ph-done) #recordNotFound {
@@ -227,10 +322,40 @@ html[data-dplus="on"] {
     filter: grayscale(0.4);
   }
 
-  /* The Dashboard home is showing but a page was left in the frame above it (content.js, initFrameFit): hide it. */
+  /* FIRST logo at the top of the sidebar instead of the 113px header bar (dashboard.js, initSidebarLogo). */
+  &.dplus-no-header {
+    .navbar-fixed-top { display: none !important; }
+    .sidebar { top: 0 !important; }
+    .body-section-content { padding-top: 0 !important; }
+  }
+  .dplus-sidebar-logo {
+    display: block;
+    padding: 20px 16px 12px;
+  }
+  .dplus-sidebar-logo img {
+    display: block;
+    width: 100%;
+    max-width: 190px;
+    height: auto;
+  }
+  /* Collapsed sidebar: show only the mark (the left part of the logo image). */
+  .sidebar.collapsed .dplus-sidebar-logo { padding: 16px 0 10px; text-align: center; }
+  .sidebar.collapsed .dplus-sidebar-logo img {
+    width: 52px;
+    height: 34px;
+    margin: 0 auto;
+    object-fit: cover;
+    object-position: left center;
+  }
+
+  /* The Dashboard's whole-window loading veil, while the team page is showing its own section "Loading…" note
+     (dashboard.js, initFrameFit): drop it so only the section that is loading says so. */
+  &.dplus-quiet-loader .loader-wrapper { display: none !important; }
+
+  /* The Dashboard home is showing but a page was left in the frame above it (dashboard.js, initFrameFit): hide it. */
   &.dplus-frame-stray #appFrame { display: none !important; }
 
-  /* Roster: each person's status lines and check boxes, moved under their name by content.js (initRosterCompact). */
+  /* Roster: each person's status lines and check boxes, moved under their name by roster.js (initRosterCompact). */
   .roster-status-row.dplus-emptied { display: none; }
   .dplus-status-stack { margin-top: 4px; }
   .dplus-status-stack > [class*="col-"] {
@@ -254,6 +379,28 @@ html[data-dplus="on"] {
     text-align: left;
   }
   .roster-parent-row .dplus-status-stack { margin-top: 0; }
+  /* Adult cards: the first row as a 12-column grid keeping each Bootstrap column's width, with the status lines
+     underneath spanning the name and "Full legal name" columns (5 of 12) instead of the name column alone. */
+  .roster-contact-card .row.dplus-grid {
+    display: grid !important;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: start;
+  }
+  .roster-contact-card .row.dplus-grid::before,
+  .roster-contact-card .row.dplus-grid::after { display: none !important; }
+  .roster-contact-card .row.dplus-grid > [class*="col-"] { width: auto !important; float: none !important; min-width: 0; grid-row: 1; }
+  .roster-contact-card .row.dplus-grid > .col-md-1 { grid-column: span 1; }
+  .roster-contact-card .row.dplus-grid > .col-md-2 { grid-column: span 2; }
+  .roster-contact-card .row.dplus-grid > .col-md-3 { grid-column: span 3; }
+  .roster-contact-card .row.dplus-grid > .col-md-4 { grid-column: span 4; }
+  .roster-contact-card .row.dplus-grid > .col-md-5 { grid-column: span 5; }
+  .roster-contact-card .row.dplus-grid > .col-md-6 { grid-column: span 6; }
+  .roster-contact-card .row.dplus-grid > .dplus-status-span {
+    grid-column: 1 / span 5;
+    grid-row: 2;
+    margin-top: 2px;
+    padding: 0 15px;
+  }
 
   .roster-parent-row label#LegalGuardian {
     font: inherit;
@@ -277,25 +424,8 @@ html[data-dplus="on"] {
     font-weight: inherit;
   }
 
-  /* School/Organization and Sponsors: each entry was split a third / two thirds, so the "Sponsor 1" heading took a
-     third of the card and squeezed the fields. Give the heading a narrow column (250px, wide enough for
-     "School/Organization 1" so both cards line up; a longer heading widens it rather than wrapping) and the fields
-     the rest. */
-  @media (min-width: 768px) {
-    .accordion-body-section2:has(> .accordion-right-section) { display: flex; }
-    .accordion-body-section2 > .col-sm-4:first-child {
-      flex: 0 0 auto;
-      width: auto;
-      min-width: 250px;
-      padding-right: 24px !important;
-      white-space: nowrap;
-    }
-    .accordion-body-section2 > .accordion-right-section {
-      flex: 1 1 auto;
-      width: auto;
-      min-width: 0;
-    }
-  }
+  /* School/Organization and Sponsors: titles above their fields, see "Cards that put each entry's title in a side
+     column" above. */
 
   /* Sponsors: the last (or only) sponsor showed a lone "swap down" arrow that has nothing to swap with. */
   #section-partner > .accordion-body-section2:last-child .glyphicon-arrow-down { display: none; }
@@ -604,6 +734,14 @@ html[data-dplus="on"] {
   }
   .dplus-who-name:hover { text-decoration: underline; }
   .dplus-who-role { color: #6b7280; white-space: nowrap; }
+  /* Roster cards of people missing Consent & Release, screening or training (roster.js, initRosterHighlights):
+     the same amber as the "needs attention" tiles above. */
+  .roster-contact-card.dplus-attention {
+    background: #fffaf0;
+    /* Background and amber edge drawn a little outside the card, so the name keeps its spacing from the edge. */
+    box-shadow: -10px 0 0 #fffaf0, -14px 0 0 #e0a100, 10px 0 0 #fffaf0;
+  }
+
   /* The person's roster card, briefly highlighted after "Show who" → name. */
   .roster-contact-card.dplus-flash {
     outline: 3px solid #e0a100;

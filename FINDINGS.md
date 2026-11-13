@@ -284,7 +284,7 @@ panel itself lists a real person. The test teams also cannot show youth until th
 
 ### How to test without installing
 
-In a Dashboard tab's console: fetch `content.css` and `content.js` from a small local server that sends
+In a Dashboard tab's console: fetch `content.css` and the scripts (`core.js` … `main.js`, in manifest order) from a small local server that sends
 `Access-Control-Allow-Origin: https://my.firstinspires.org`, add the CSS in a `<style>` tag, and `eval` the script. For a dry
 run of the write tools, replace `jQuery.ajax` with a stub for `POST /Teams/Page/…` and add made-up entries to
 `ContactRosterModel.TeamStudents`, `teamContactsModel.ExpressInvitationsList` and `teamContactsModel.PeopleRoles`, then nudge
