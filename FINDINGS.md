@@ -292,6 +292,6 @@ run of the write tools, replace `jQuery.ajax` with a stub for `POST /Teams/Page/
 
 ## 9. Rules to keep in mind
 
-- The Mentor Network Terms of Use embedded in the Dashboard page forbid "any automated use of the Site" and scraping for that part of the site. Dashboard+ should only act when the user clicks, keep request volume low, and stay out of Mentor Network features unless this is checked with FIRST.
+- The Dashboard page still embeds the FIRST Mentor Network Terms of Use (which forbid "any automated use of the Site"), but FIRST has closed the Mentor Network (announced with its 2025–2026 mentor changes; teams now connect through Team Search contact details instead), so the terms are a leftover. Dashboard+ still only acts when the user clicks and keeps request volume low.
 - Write actions get a preview and a confirmation first, as in VMS+.
 - The tool output filter used during this exploration hides query strings and cookies, so no session secrets are recorded here.

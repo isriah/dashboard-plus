@@ -143,8 +143,7 @@ permission it asks for is storage, to remember whether it's switched on.
 - **Not tested end to end yet:** accepting a real applicant and sending reminders from the panel (both were dry-run
   with intercepted requests; the reminder request itself was sent once by hand and succeeded), and the panel on a
   large roster.
-- **Deliberately left alone:** inviting people (the site puts a reCAPTCHA on it) and the Mentor Network, whose terms
-  forbid automated use.
+- **Deliberately left alone:** inviting people (the site puts a reCAPTCHA on it).
 - The screenshots use made-up teams and people.
 
 `FINDINGS.md` has the details behind all of this: how the Dashboard is put together, the server calls it makes, what
