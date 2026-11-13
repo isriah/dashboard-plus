@@ -9,7 +9,7 @@
 (() => {
   'use strict';
   if (window.__dashPlus) return;
-  window.__dashPlus = '0.6.4';
+  window.__dashPlus = '0.6.5';
 
   // ---------- small helpers ----------
 

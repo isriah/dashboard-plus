@@ -166,10 +166,23 @@ html[data-dplus="on"] {
   }
 
   /* School/Organization and Sponsors: each entry was split a third / two thirds, so the "Sponsor 1" heading took a
-     third of the card and squeezed the fields. Give the heading a fixed narrow column and the fields the rest. */
+     third of the card and squeezed the fields. Give the heading a narrow column (250px, wide enough for
+     "School/Organization 1" so both cards line up; a longer heading widens it rather than wrapping) and the fields
+     the rest. */
   @media (min-width: 768px) {
-    .accordion-body-section2 > .col-sm-4:first-child { width: 200px; }
-    .accordion-body-section2 > .accordion-right-section { width: calc(100% - 200px); }
+    .accordion-body-section2:has(> .accordion-right-section) { display: flex; }
+    .accordion-body-section2 > .col-sm-4:first-child {
+      flex: 0 0 auto;
+      width: auto;
+      min-width: 250px;
+      padding-right: 24px !important;
+      white-space: nowrap;
+    }
+    .accordion-body-section2 > .accordion-right-section {
+      flex: 1 1 auto;
+      width: auto;
+      min-width: 0;
+    }
   }
 
   /* Sponsors: the last (or only) sponsor showed a lone "swap down" arrow that has nothing to swap with. */

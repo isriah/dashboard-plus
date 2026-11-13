@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "FIRST Dashboard+",
-  "version": "0.6.4",
+  "version": "0.6.5",
   "description": "Plain-English task reasons, persona shortcuts, bulk roster actions and layout fixes. Runs entirely in your browser.",
   "permissions": [
     "storage"
