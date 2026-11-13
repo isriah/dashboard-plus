@@ -9,7 +9,7 @@
 (() => {
   'use strict';
   if (window.__dashPlus) return;
-  window.__dashPlus = '0.8.5';
+  window.__dashPlus = '0.8.6';
 
   // ---------- small helpers ----------
 
@@ -704,11 +704,23 @@
       const noCR = r.peopleNoCR.length + r.mentorAppsNoCR.length + r.youthNoCR.length;
       // One even grid of tiles: the number, what it counts, the breakdown, and (where there is something to do) the
       // action right on the tile it acts on. Only "needs attention" tiles above zero are highlighted.
-      const tile = ({ n, label, detail, warn, action }) => el('div', { class: 'dplus-stat' + (warn && n > 0 ? ' dplus-warn' : '') },
-        el('div', { class: 'dplus-stat-n', text: String(n) }),
-        el('div', { class: 'dplus-stat-label', text: label }),
-        detail && el('div', { class: 'dplus-stat-detail', text: detail }),
-        action && n > 0 && el('button', { class: 'dplus-btn dplus-stat-action', type: 'button', text: action.text, onclick: action.run }));
+      // `who`: the people behind a count, shown in a small card on request (name, role; click to jump to their card).
+      const tile = ({ n, label, detail, warn, action, who }) => {
+        const box = el('div', { class: 'dplus-stat' + (warn && n > 0 ? ' dplus-warn' : '') },
+          el('div', { class: 'dplus-stat-n', text: String(n) }),
+          el('div', { class: 'dplus-stat-label', text: label }),
+          detail && el('div', { class: 'dplus-stat-detail', text: detail }),
+          action && n > 0 && el('button', { class: 'dplus-btn dplus-stat-action', type: 'button', text: action.text, onclick: action.run }));
+        if (who && who.length) {
+          const btn = el('button', {
+            class: 'dplus-btn dplus-stat-action', type: 'button', 'aria-expanded': 'false',
+            text: who.length === 1 ? 'Show who' : 'Show all ' + who.length,
+            onclick: (e) => { e.stopPropagation(); togglePeople(box, btn, label, who); },
+          });
+          box.append(btn);
+        }
+        return box;
+      };
 
       fill(panel,
         el('div', { class: 'dplus-head' }, el('span', { class: 'dplus-badge', text: 'Dashboard+' }), 'Roster at a glance'),
@@ -739,9 +751,54 @@
               }),
             },
           }),
-          tile({ n: r.screening.length, label: 'Screening incomplete', warn: true }),
-          tile({ n: r.training.length, label: 'Training incomplete', warn: true })),
+          tile({ n: r.screening.length, label: 'Screening incomplete', warn: true, who: r.screening }),
+          tile({ n: r.training.length, label: 'Training incomplete', warn: true, who: r.training })),
         r.youthHidden && el('div', { class: 'dplus-note', text: 'Youth are hidden on this team until two Lead Coaches have passed Youth Protection screening, so youth counts read as zero.' }));
+    }
+
+    // A small card under a tile listing who is behind its count. Names come from the roster the page already has.
+    // Clicking a name scrolls to that person's card on the roster and highlights it for a moment.
+    function togglePeople(tileBox, btn, label, people) {
+      const open = tileBox.querySelector('.dplus-who');
+      panel.querySelectorAll('.dplus-who').forEach((n) => n.remove());
+      panel.querySelectorAll('.dplus-stat-action[aria-expanded="true"]').forEach((b) => b.setAttribute('aria-expanded', 'false'));
+      if (open) return; // it was open: this click closes it
+      const card = el('div', { class: 'dplus-who', role: 'dialog', 'aria-label': label },
+        el('div', { class: 'dplus-who-head' }, el('b', { text: label }),
+          el('button', { class: 'dplus-who-close', type: 'button', 'aria-label': 'Close', text: '×', onclick: () => close() })),
+        el('ul', {}, people.map((p) => {
+          const name = fullName(p.name_first, p.name_last) || 'Unnamed';
+          return el('li', {},
+            el('button', { class: 'dplus-who-name', type: 'button', text: name, title: 'Show ' + name + ' on the roster', onclick: () => { close(); jumpToPerson(name); } }),
+            el('span', { class: 'dplus-who-role', text: p.role_title || p.RoleName || '' }));
+        })));
+      tileBox.append(card);
+      btn.setAttribute('aria-expanded', 'true');
+      const outside = (e) => { if (!card.contains(e.target) && e.target !== btn) close(); };
+      const esc = (e) => { if (e.key === 'Escape') { close(); btn.focus(); } };
+      function close() {
+        card.remove();
+        btn.setAttribute('aria-expanded', 'false');
+        document.removeEventListener('click', outside, true);
+        document.removeEventListener('keydown', esc, true);
+      }
+      setTimeout(() => {
+        document.addEventListener('click', outside, true);
+        document.addEventListener('keydown', esc, true);
+      }, 0);
+      card.querySelector('.dplus-who-name')?.focus();
+    }
+
+    function jumpToPerson(name) {
+      const want = name.toLowerCase();
+      const target = [...box.querySelectorAll('.roster-contact-card')].find((c) => {
+        const n = c.querySelector('.roster-card-name');
+        return n && n.textContent.replace(/\s+/g, ' ').trim().toLowerCase().startsWith(want);
+      });
+      if (!target) return;
+      target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      target.classList.add('dplus-flash');
+      setTimeout(() => target.classList.remove('dplus-flash'), 2200);
     }
 
     function showList(spec) {

@@ -51,7 +51,8 @@ screenshot above), so there is no Switch Persona round-trip. Personas with nothi
 
 On a team's **Team Roster** tab, a row of tiles shows who is waiting for a decision and who is missing Consent & Release,
 screening or training — without scrolling through every person. Counts that need attention are highlighted, and the
-actions sit on the tiles they act on.
+actions sit on the tiles they act on. **Show who** on the Screening and Training tiles lists the people behind the count;
+click a name to jump to their card on the roster.
 
 ![Roster summary with counts for applicants, missing Consent & Release, screening and training](docs/roster-at-a-glance.png)
 
@@ -84,6 +85,8 @@ Options menu.
 - The **Team Roster** tab fills the page width like the other tabs, and its Expand All row lines up with the heading.
 - Drop-downs (Country, Region, Sponsor type…) match the text boxes beside them in font, inset and border.
 - On the roster, parent/guardian names use the same font as every other name (the site styled them as larger grey labels).
+- **Team Events and Awards**: the Drop Event button fits its column, voucher expiration dates no longer split the year
+  onto its own line, and the Passwords/Voucher Codes headings no longer break mid-word.
 - Button rows under each tab heading wrap evenly in a narrow window, and the **Awards List** tiles sit two or three to a row
   instead of one full-width tile per row.
 - Checkboxes in **Communication & Mentoring** (and similar sections) sit beside their labels, not above them.

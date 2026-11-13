@@ -119,6 +119,40 @@ html[data-dplus="on"] {
      prior-season roster (on some teams without any explanation), so it only looked broken. Hide it when disabled. */
   .printable-roster-wrapper:has(> #show-prior-season-printable-roster:disabled) { display: none !important; }
 
+  /* Team Events and Awards → Event List: the Drop Event button is a fixed 160px wide, wider than its column (about
+     136px at common widths), so it stuck out past the table's edge. Let it fit its column. */
+  .tbl-bd-rw-col .ds-btn.btn-cancel {
+    width: auto !important;
+    max-width: 100%;
+    padding-left: 12px;
+    padding-right: 12px;
+    white-space: nowrap;
+  }
+
+  /* Season Specific → Current / Prior Season Passwords/Voucher Codes: the expiration date sat in a box two thirds the
+     width of its column and was allowed to wrap, so the year dropped onto its own line ("05/01/" then "2027"). */
+  .row-col-exp {
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+  }
+  .row-col-exp > .vendor-exp {
+    flex: 1 1 auto;
+    width: auto !important;
+    padding: 0 !important;
+    white-space: nowrap;
+  }
+  .row-col-exp > .row-chev { flex: 0 0 auto; width: auto !important; padding: 0 !important; }
+  /* The section headings ("Current Season Passwords/Voucher Codes", "Robot Name") were squeezed into a quarter-width
+     column that broke words mid-way ("Vouche / r"). Same treatment as School/Organization and Sponsors: a 250px
+     heading column, the rest for the content, and no mid-word breaks. */
+  @media (min-width: 768px) {
+    .row.full-width:has(> .col-md-3 > .section-title):has(> .col-md-9) { display: flex; align-items: flex-start; }
+    .row.full-width:has(> .col-md-3 > .section-title) > .col-md-3 { flex: 0 0 250px; width: 250px; max-width: none; }
+    .row.full-width:has(> .col-md-3 > .section-title) > .col-md-9 { flex: 1 1 auto; width: auto; max-width: none; min-width: 0; }
+  }
+  .section-title { word-break: normal; overflow-wrap: break-word; }
+
   /* Team Events and Awards → Awards List: the award tiles went one per row (each the full width) in a narrow window.
      Lay them out on a grid: three across when there is room, two when narrower, one only when very narrow. */
   .row--full-width:has(> .col-md-4--award-list) {
@@ -521,6 +555,61 @@ html[data-dplus="on"] {
   .dplus-stat.dplus-warn { border-color: #f0d9a0; border-left-color: #e0a100; background: #fffaf0; }
   .dplus-stat.dplus-warn .dplus-stat-n { color: #8a5a00; }
   .dplus-stat-label, .dplus-stat-detail { margin-bottom: 6px; }
+  .dplus-stat { position: relative; }
+
+  /* "Show who" card under a tile: the people behind its count. */
+  .dplus-who {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 20;
+    min-width: 260px;
+    max-width: 360px;
+    max-height: 320px;
+    overflow: auto;
+    padding: 10px 12px;
+    border: 1px solid #c9d7e8;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+    font-size: 13px;
+  }
+  .dplus-stat:nth-child(3n) .dplus-who { left: auto; right: 0; } /* right-hand column: open leftwards */
+  .dplus-who-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .dplus-who-close {
+    border: 0;
+    background: none;
+    font-size: 18px;
+    line-height: 1;
+    color: #5c6470;
+    cursor: pointer;
+  }
+  .dplus-who ul { list-style: none; margin: 0; padding: 0; }
+  .dplus-who li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 0;
+    border-top: 1px solid #eef1f5;
+  }
+  .dplus-who-name {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ds-color-primary, #0066b3);
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+  }
+  .dplus-who-name:hover { text-decoration: underline; }
+  .dplus-who-role { color: #6b7280; white-space: nowrap; }
+  /* The person's roster card, briefly highlighted after "Show who" → name. */
+  .roster-contact-card.dplus-flash {
+    outline: 3px solid #e0a100;
+    outline-offset: 2px;
+    transition: outline-color 0.4s;
+  }
   /* The action sits at the foot of its tile, so buttons line up across a row. */
   .dplus-stat .dplus-stat-action {
     margin-top: auto;
