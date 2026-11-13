@@ -127,6 +127,14 @@
     frame.addEventListener('load', done);
   }
 
+  // Marks a reason row's "Holds up …" as cut off (so hovering shows the full list) only if it really is: the width
+  // depends on the window, so this is checked each time the pointer arrives.
+  function markCut(e) {
+    const areas = e.currentTarget.querySelector('.dplus-areas');
+    const text = areas && areas.firstElementChild;
+    if (text) areas.classList.toggle('dplus-cut', text.scrollWidth > text.clientWidth + 1);
+  }
+
   function renderReasons(team, reasons) {
     const canFix = team.Role === 'coach-1' || team.Role === 'coach-2' || team.Role === 'team_admin';
     const fixable = canFix && typeof window.GetResolutionURL === 'function';
@@ -144,16 +152,19 @@
       // The whole row opens the page, not just the Fix button at the far right. (Keyboard users have the button.)
       onclick: fixable ? fix(r) : null,
       title: fixable ? 'Open the page where this is fixed' : null,
+      onmouseenter: markCut,
     },
       el('span', { class: 'dplus-dot' }),
       el('span', { class: 'dplus-reason-main' },
         el('span', { class: 'dplus-reason-text', text: r.text }),
         r.roster && el('span', { class: 'dplus-tag', text: 'Roster task', title: 'This is what the "Pending Roster Task" badge refers to' })),
+      // "Holds up …" is one line, cut off with "…" when long. Hovering the row shows the whole list in a card under it
+      // (only when it was actually cut off). title '' keeps the row's own tooltip from covering that card.
       el('span', {
         class: 'dplus-areas',
-        text: r.areas.length ? 'Holds up ' + r.areas.join(', ') : '',
-        title: r.areas.length ? 'Holds up: ' + r.areas.join(', ') : null,
-      }),
+        title: '',
+        'data-full': r.areas.length ? 'Holds up ' + r.areas.join(', ') : '',
+      }, el('span', { class: 'dplus-areas-text', text: r.areas.length ? 'Holds up ' + r.areas.join(', ') : '' })),
       fixable && el('button', {
         class: 'dplus-link', type: 'button', text: 'Fix',
         title: 'Open the page where this is fixed',

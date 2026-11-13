@@ -1,0 +1,68 @@
+/* Dashboard+ — Loading notes and covers: "Opening the page…", "Loading the roster…", section "Loading…" (loading.js, core.js).
+   Every rule applies only while Dashboard+ is switched on: bridge.js sets data-dplus on <html> from the toolbar
+   button, so turning it off restores the site exactly as it was, without a reload. */
+html[data-dplus="on"] {
+
+  /* A team page on its way to another page (e.g. Printable Roster): a light cover with the message on top. */
+  #dplus-leaving {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 120px;
+    background: rgba(245, 249, 255, 0.7);
+  }
+  #dplus-leaving .dplus-wait {
+    max-width: 640px;
+    margin: 0 16px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  }
+  #dplus-leaving .dplus-wait .dplus-btn { margin-left: auto; align-self: center; }
+
+  /* Roster loading: the banner stays in view while scrolling, and a roster shown from memory (or being reloaded) is
+     dimmed; it is also inert (no clicks, no keyboard) until the fresh roster replaces it. */
+  #dplus-wait-roster {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+  #acct-roster-accordion.dplus-roster-stale {
+    opacity: 0.55;
+    filter: grayscale(0.4);
+  }
+
+  /* "Opening the page…" (a Fix link's page loading in the Dashboard's hidden frame) and "Loading the roster…". */
+  .dplus-wait {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 24px;
+    padding: 14px 16px;
+    border: 1px solid #c9d7e8;
+    border-radius: 8px;
+    background: #f5f9ff;
+    font-size: 14px;
+    line-height: 1.45;
+    color: #1a1a1a;
+  }
+  .dplus-spinner {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #c9d7e8;
+    border-top-color: var(--ds-color-primary, #0066b3);
+    border-radius: 50%;
+    animation: dplus-spin 0.9s linear infinite;
+  }
+
+  /* Inside a team page tab (a column flexbox), take the full width and line up with the tab's content. */
+  .team-content > .dplus-wait {
+    align-self: stretch;
+    margin: 16px 0;
+  }
+}
+
+@keyframes dplus-spin { to { transform: rotate(360deg); } }

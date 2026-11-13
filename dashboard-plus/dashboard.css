@@ -1,0 +1,108 @@
+/* Dashboard+ — Dashboard home, sidebar (logo, persona buttons) and the frame that holds team and Profile pages.
+   Every rule applies only while Dashboard+ is switched on: bridge.js sets data-dplus on <html> from the toolbar
+   button, so turning it off restores the site exactly as it was, without a reload. */
+html[data-dplus="on"] {
+
+  /* Dashboard with a team or Profile page open (dashboard.js, initFrameFit): the frame fills the space between the fixed
+     header and the bottom of the window, and the footer is hidden, so the page in the frame is the only thing that
+     scrolls and the site's pop-ups inside it stay in view. */
+  &.dplus-frame-open {
+    /* The site sets overflow-y:auto on <html> itself, so hiding overflow on <body> alone did not remove the window's
+       scrollbar; and the page came out a pixel taller than the window, which was enough to show it next to the team
+       page's own. Lock the window itself so there is only ever the one scrollbar, however the heights round. */
+    overflow: hidden !important;
+    .body-main-content {
+      min-height: 0 !important;
+      height: calc(100vh - var(--dplus-header, 113px)) !important;
+    }
+    .body-section-content { min-height: 0 !important; }
+    #footer { display: none !important; }
+    body { overflow: hidden; }
+  }
+
+  /* FIRST logo at the top of the sidebar instead of the 113px header bar (dashboard.js, initSidebarLogo). */
+  &.dplus-no-header {
+    .navbar-fixed-top { display: none !important; }
+    .sidebar { top: 0 !important; }
+    .body-section-content { padding-top: 0 !important; }
+  }
+  .dplus-sidebar-logo {
+    display: block;
+    padding: 20px 16px 12px;
+  }
+  .dplus-sidebar-logo img {
+    display: block;
+    width: 100%;
+    max-width: 190px;
+    height: auto;
+  }
+
+  /* Collapsed sidebar: show only the mark (the left part of the logo image). */
+  .sidebar.collapsed .dplus-sidebar-logo { padding: 16px 0 10px; text-align: center; }
+  .sidebar.collapsed .dplus-sidebar-logo img {
+    width: 52px;
+    height: 34px;
+    margin: 0 auto;
+    object-fit: cover;
+    object-position: left center;
+  }
+
+  /* The Dashboard's whole-window loading veil, while the team page is showing its own section "Loading…" note
+     (dashboard.js, initFrameFit): drop it so only the section that is loading says so. */
+  &.dplus-quiet-loader .loader-wrapper { display: none !important; }
+
+  /* The Dashboard home is showing but a page was left in the frame above it (dashboard.js, initFrameFit): hide it. */
+  &.dplus-frame-stray #appFrame { display: none !important; }
+
+  /* Dashboard home: the banner photo at the top of each persona (Team, Event Volunteer, Parent/Guardian, Class Pack)
+     is drawn 200px tall at the full window width with no aspect handling, so it stretched sideways as the window
+     widened (1.7x on a wide screen). Crop it to fill the strip instead, keeping the people in frame. */
+  .team-banner > img {
+    object-fit: cover;
+    object-position: center 35%;
+  }
+
+  /* Dashboard tables (team list and the like): every column has a 7px margin on each side that the site's percentage
+     widths do not allow for, so the last column ("Participating Team") ran past the table's right edge. Let the columns
+     shrink to fit and the header text wrap. */
+  .table-header > .header-cell,
+  .table-row > .row-cell {
+    flex-shrink: 1 !important;
+    min-width: 0;
+  }
+  .table-header > .header-cell.center .header-cell-text { text-align: center; }
+  .row-cell-sub-cell.dplus-merged[hidden] { display: none !important; }
+
+  #dplus-personas {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+  }
+  .sidebar:not(.collapsed) #dplus-personas .dplus-persona {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 28px;
+  }
+  .dplus-persona[hidden] { display: none !important; }
+
+  /* "More…" reveals the personas hidden as empty. */
+  #dplus-personas.dplus-show-all .dplus-persona:not(.dplus-more)[hidden] { display: flex !important; opacity: 0.75; }
+  .dplus-more .menu-item-label { color: #5c6470; }
+  .dplus-persona .side-menu-icon {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border-radius: 50%;
+  }
+  .dplus-persona .menu-item-label { font-size: 14px; }
+  .dplus-persona.dplus-current { box-shadow: inset 3px 0 0 var(--ds-color-primary, #0066b3); }
+  .dplus-persona.dplus-current .menu-item-label { font-weight: 700; }
+
+  /* On Youth Protection, My Account and the other sidebar pages, no persona is being shown: drop the marker. */
+  #dashboard-select:not(.active-menu) + #dplus-personas .dplus-current { box-shadow: none; }
+  #dashboard-select:not(.active-menu) + #dplus-personas .dplus-current .menu-item-label { font-weight: inherit; }
+  .dplus-persona:focus-visible { outline: 2px solid var(--ds-color-primary, #0066b3); outline-offset: -2px; }
+  .sidebar.collapsed .dplus-persona { justify-content: center; }
+  .sidebar.collapsed .dplus-persona img { margin: auto; }
+}

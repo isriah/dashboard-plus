@@ -1,0 +1,319 @@
+/* Dashboard+ — Team pages (Team Information, Team Events and Awards, the header and tabs): layout fixes for the site.
+   Every rule applies only while Dashboard+ is switched on: bridge.js sets data-dplus on <html> from the toolbar
+   button, so turning it off restores the site exactly as it was, without a reload. */
+html[data-dplus="on"] {
+
+  /* Checkbox sat on its own line above its label. The site sets flex-direction, align-items and gap on
+     .participation-section but never display:flex (except for the copy in the page header). */
+  .participation-section {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 8px;
+  }
+  .participation-section > span:empty { display: none; }
+  .participation-section > input[type="checkbox"] {
+    flex: 0 0 auto;
+    width: 16px !important;
+    height: 16px !important; /* the site makes these 27px tall, which pushes the box below its label */
+    min-height: 0;
+    margin: 1px 0 0 !important;
+  }
+  .participation-section > label {
+    flex: 0 1 auto;
+    margin: 0;
+    line-height: 18px;
+  }
+
+  /* The team page header's "My team is participating" row uses the same class and adds a taller "Secured for this
+     season" badge: centre everything on one line there instead of pinning it to the top. */
+  .participation-section:has(> .season-secured-badge) { align-items: center !important; }
+  .participation-section:has(> .season-secured-badge) > input[type="checkbox"] { margin: 0 !important; }
+
+  /* The reason tooltip above the first tab was centred on the tab and ran off the left edge of the window. */
+  .tabs-group > .team-tab-container:first-child > .outstanding-notification {
+    left: 0;
+    transform: none;
+  }
+  .tabs-group > .team-tab-container:first-child > .outstanding-notification::after {
+    left: 40px;
+    transform: none;
+  }
+
+  /* The older roster wizard (/Teams/Wizard/TeamContacts/<step>) draws its "Create New Team" title, program line and
+     step bar twice: once across the top, and again inside the narrow left side-menu column, where the step labels
+     overlap and run into the main content. Hide the copy in the side-menu; its Express/Invitations links stay. */
+  .sidenav > .container-fluid > div:has(> h1),
+  .sidenav > .container-fluid > div:has(> .FIRSTProgram),
+  .sidenav > .container-fluid > br,
+  .sidenav .stepper {
+    display: none !important;
+  }
+
+  /* Team page header (Return to Dashboard down to the four tabs), tightened from about 360px to about 230px:
+     - 25px gaps between its blocks → 14px;
+     - the Event Ready badge sat in a 20px-padded grey box that made the Veteran / city / district line 76px tall;
+     - "My team is participating" had a line of its own; it now follows the district on the same line (wrapping on
+       narrow windows);
+     - the Storefront button lines up with the team name instead of the top of the block;
+     - the tab row stopped 80px short of the right edge (as did each tab's content), unlike the Storefront button and
+       the roster; both now run to the same edge, the four tabs share the width evenly, and they are a little shorter. */
+  .team-details-header {
+    gap: 14px;
+
+    .team-header-btns { margin-top: 14px; }
+    .team-header-details {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      column-gap: 28px;
+      row-gap: 10px;
+    }
+    .team-header-details > .team-heading { flex: 1 0 100%; }
+    .team-header-details > .basic-info,
+    .team-header-details > .participation-section {
+      width: auto !important;
+      flex: 0 1 auto;
+    }
+    .event-ready-section { padding: 0; background: transparent; }
+
+    .tabs-group {
+      padding-right: 0;
+      gap: 16px;
+      /* Room for FIRST's red task tooltip above the active tab, sized by team-page.js (initTabNotice), so it no longer
+         covers the line above. */
+      margin-top: max(0px, calc(var(--dplus-notice, 0px) - 14px));
+    }
+    .tabs-group > .team-tab-container { flex: 1 1 0; }
+    .tab-btn { padding-top: 10px; padding-bottom: 10px; }
+  }
+  .team-content .accordion-custom { padding-right: 0; }
+
+  /* Team page: the body under the tabs is a Bootstrap .row, whose -15px side margins put every tab's content 15px to the
+     left of the team name, tabs and buttons above it. */
+  .team-content.row.p-lr-50 {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Button rows under each tab heading (Expand All, Close All, Event Help, Find an Event, Printable Roster…): each
+     button had 16px side margins except the first, so the row started 16px in and, in a narrow window, the buttons
+     that wrapped to a second line were indented and unevenly spaced. Wrap them evenly from the left edge. */
+  .expand-close-section,
+  #acct-roster-accordion > div:has(> .btn-cancel) {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+  }
+  .expand-close-section > *,
+  #acct-roster-accordion > div:has(> .btn-cancel) > *,
+  #acct-roster-accordion > div:has(> .btn-cancel) > span > .ds-btn {
+    margin: 0 !important;
+  }
+
+  /* Team Events and Awards → Event List: the Drop Event button is a fixed 160px wide, wider than its column (about
+     136px at common widths), so it stuck out past the table's edge. Let it fit its column. */
+  .tbl-bd-rw-col .ds-btn.btn-cancel {
+    width: auto !important;
+    max-width: 100%;
+    padding-left: 12px;
+    padding-right: 12px;
+    white-space: nowrap;
+  }
+
+  /* Season Specific → Current / Prior Season Passwords/Voucher Codes: the expiration date sat in a box two thirds the
+     width of its column and was allowed to wrap, so the year dropped onto its own line ("05/01/" then "2027"). */
+  .row-col-exp {
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+  }
+  .row-col-exp > .vendor-exp {
+    flex: 1 1 auto;
+    width: auto !important;
+    padding: 0 !important;
+    white-space: nowrap;
+  }
+  .row-col-exp > .row-chev { flex: 0 0 auto; width: auto !important; padding: 0 !important; }
+
+  /* The voucher NOTICE banner: the icon's 20px top/bottom margins stretched the box, leaving a gap under the text and
+     the icon sitting below the text's middle. Centre both and keep only the side margins. */
+  .notice-banner.notice-bar { align-items: center !important; }
+  .notice-banner.notice-bar > .season-notice-icon { margin: 0 5px !important; line-height: 0; }
+  .section-title { word-break: normal; overflow-wrap: break-word; }
+
+  /* Cards that put each entry's title in a side column took up a lot of room for a few words and squeezed the
+     content (and broke titles mid-word): Season Specific ("Robot Name", "Current/Prior Season Passwords/Voucher
+     Codes"), School/Organization, Sponsors ("Sponsor 1"…), Financial Guarantor. Put the title above its content as a
+     heading, and give the content the full width of the card. */
+  .row.full-width:has(> .col-md-3 > .section-title) {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch !important;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .row.full-width:has(> .col-md-3 > .section-title) > [class*="col-"],
+  .accordion-body-section2:has(> .accordion-right-section) > [class*="col-"],
+  .row:has(> .col-md-4 > h3.ds-text-h3) > [class*="col-"] {
+    float: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    flex: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .row.full-width:has(> .col-md-3 > .section-title) > .col-md-3,
+  .accordion-body-section2:has(> .accordion-right-section) > .col-sm-4:first-child,
+  .row:has(> .col-md-4 > h3.ds-text-h3) > .col-md-4 {
+    margin-bottom: 14px;
+  }
+  .row:has(> .col-md-4 > h3.ds-text-h3) { margin-left: 0; margin-right: 0; }
+
+  /* The site lays each School/Organization and Sponsor entry out as a flex row; stack its two halves instead
+     (otherwise, at full width each, the fields were pushed off the right-hand edge). */
+  .accordion-body-section2:has(> .accordion-right-section) { display: block !important; }
+
+  /* With titles above their fields, consecutive entries (Sponsor 1, Sponsor 2…, School/Organization 1, 2…) ran
+     together as one long form. Separate each entry with a rule and some space. */
+  .accordion-body-section2:has(> .accordion-right-section) { position: relative; }
+
+  /* (The site makes the fields column a positioned box; let the controls below line up with the entry instead.) */
+  .accordion-body-section2 > .accordion-right-section { position: static !important; }
+  .accordion-body-section2:has(> .accordion-right-section) + .accordion-body-section2:has(> .accordion-right-section) {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e3e8ef;
+  }
+
+  /* Each entry's controls (reorder arrows, remove ×, info ⓘ) sat on a line of their own under the title: move them to
+     the right-hand end of the title line, where it is clear which entry they belong to. */
+  .accordion-body-section2 > .accordion-right-section > .w-100:first-child {
+    position: absolute;
+    top: 2px;
+    right: 0;
+    width: auto !important;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .accordion-body-section2 + .accordion-body-section2 > .accordion-right-section > .w-100:first-child { top: 22px; }
+  .accordion-body-section2 > .accordion-right-section > .w-100:first-child > * {
+    float: none !important;
+    width: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .accordion-body-section2 > .accordion-right-section > .w-100:first-child .close { font-size: 22px; line-height: 1; }
+  .accordion-body-section2:has(> .accordion-right-section) > .col-sm-4:first-child { padding-right: 90px !important; }
+
+  /* Season Specific: "Robot Name" was both the heading and the field's label ("ROBOT NAME*"). Keep the heading (with
+     the required star) and hide the duplicate label from view; it stays readable to screen readers. */
+  .robot-label-wrapper > .robot-label {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .row.full-width:has(.robot-label) .section-title::after {
+    content: " *";
+    color: #c8102e;
+  }
+
+  /* Team Events and Awards → Event List: six equal columns crammed the venue address onto five lines while Status and
+     Action had room to spare. Rebalance: Status wide enough for "REGISTERED" at half width; narrower Type; wider Venue. */
+  #event-list .tbl-hd > .tbl-hd-rw,
+  #event-list .tbl-bd-rw > .tbl-bd-rw-col { max-width: none !important; }
+
+  /* 15px of padding each side took 30px from every column, wrapping "Event Type" in a half-width window. Headings and
+     cells change together, so they stay lined up. */
+  #event-list .tbl-hd > .tbl-hd-rw,
+  #event-list .tbl-bd-rw > .tbl-bd-rw-col { padding-left: 10px !important; padding-right: 10px !important; }
+  #event-list .tbl-hd > .tbl-hd-rw:nth-of-type(1), #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(1) { flex: 0 0 13% !important; width: 13% !important; }
+  #event-list .tbl-hd > .tbl-hd-rw:nth-of-type(2), #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(2) { flex: 0 0 20% !important; width: 20% !important; }
+  #event-list .tbl-hd > .tbl-hd-rw:nth-of-type(3), #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(3) { flex: 0 0 14% !important; width: 14% !important; }
+  #event-list .tbl-hd > .tbl-hd-rw:nth-of-type(4), #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(4) { flex: 0 0 12% !important; width: 12% !important; }
+  #event-list .tbl-hd > .tbl-hd-rw:nth-of-type(5), #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(5) { flex: 0 0 27% !important; width: 27% !important; }
+  #event-list .tbl-hd > .tbl-hd-rw:nth-of-type(6), #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(6) { flex: 0 0 14% !important; width: 14% !important; }
+
+  /* Narrower than Bootstrap's 992px breakpoint, six columns can't fit (FIRST's own table runs off the right edge).
+     Each event becomes a small card instead: name and Drop Event on top, then status, dates and type, then the venue. */
+  @media (max-width: 991px) {
+    #event-list .tbl-hd { display: none !important; }
+    #event-list .tbl-bd-rw {
+      display: flex !important;
+      flex-wrap: wrap;
+      align-items: center;
+      row-gap: 2px;
+      padding: 8px 0;
+    }
+    #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(n) {
+      flex: 0 0 auto !important;
+      width: auto !important;
+      min-height: 0 !important;
+      height: auto !important;
+      line-height: 20px !important;
+    }
+    #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(2) { order: 1; flex: 1 1 calc(100% - 140px) !important; min-width: 0; font-weight: 600; }
+    /* With no Drop Event button the name takes the whole line, so the status still starts the second line. */
+    #event-list .tbl-bd-rw:not(:has(> .tbl-bd-rw-col:nth-of-type(6) :is(.ds-btn, button, a))) > .tbl-bd-rw-col:nth-of-type(2) { flex-basis: 100% !important; }
+    #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(6) { order: 2; }
+    #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(1) { order: 3; }
+    #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(3) { order: 4; white-space: nowrap; }
+    #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(4) { order: 5; }
+    #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(5) { order: 6; flex: 0 0 100% !important; width: 100% !important; color: #4b5563; }
+    /* An empty Action cell (a dropped event) would leave a gap at the end of the name line. */
+    #event-list .tbl-bd-rw > .tbl-bd-rw-col:nth-of-type(6):not(:has(:is(.ds-btn, button, a))) { display: none !important; }
+  }
+
+  /* Season Specific → Passwords/Voucher Codes: below 992px FIRST's columns lose their widths and bunch up at the left
+     ("Armabot  Voucher for one RS7 encoder  05/01/2027" in a row). Keep the 4/5/3 split at every width. */
+  .tbl-body:has(.voucher-row) .col-md-4 { flex: 0 0 33.333% !important; max-width: 33.333% !important; }
+  .tbl-body:has(.voucher-row) .col-md-5 { flex: 0 0 41.667% !important; max-width: 41.667% !important; }
+  .tbl-body:has(.voucher-row) .col-md-3 { flex: 0 0 25% !important; max-width: 25% !important; }
+
+  /* Team Events and Awards → Awards List: the award tiles went one per row (each the full width) in a narrow window.
+     Lay them out on a grid: three across when there is room, two when narrower, one only when very narrow. */
+  .row--full-width:has(> .col-md-4--award-list) {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    max-width: 960px;
+    margin: 10px auto 20px !important;
+  }
+
+  /* Bootstrap's invisible clearfix boxes on .row would otherwise take up grid cells. */
+  .row--full-width:has(> .col-md-4--award-list)::before,
+  .row--full-width:has(> .col-md-4--award-list)::after {
+    display: none !important;
+  }
+  .row--full-width > .col-md-4--award-list {
+    width: auto !important;
+    max-width: none;
+    margin: 0 !important;
+    float: none;
+  }
+
+  /* Team Information and Finances: drop-downs (Country, Region, School/Organization type, Sponsor type, season) used a
+     smaller font, a different inset, border and corner radius than the text boxes next to them. */
+  .accordion-body-custom select.ds-select__field {
+    font-size: 16px;
+    padding-left: 12px;
+    border-color: rgb(226, 232, 240);
+    border-radius: 6px;
+  }
+
+  /* Mentoring: in "What area(s) do you need mentoring in?" each option is a <label> (a <div> in the two groups above
+     it), so the site's label style added 5px under every row and that group was spaced differently. */
+  label.participation-section {
+    margin-bottom: 0 !important;
+    font-weight: inherit;
+  }
+
+  /* School/Organization and Sponsors: titles above their fields, see "Cards that put each entry's title in a side
+     column" above. */
+
+  /* Sponsors: the last (or only) sponsor showed a lone "swap down" arrow that has nothing to swap with. */
+  #section-partner > .accordion-body-section2:last-child .glyphicon-arrow-down { display: none; }
+}

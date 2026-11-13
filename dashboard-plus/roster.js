@@ -451,7 +451,7 @@
         } else if (nameSlot.parentElement && nameSlot.parentElement.classList.contains('row')) {
           // Adults: the name column is narrow (3 of 12), so several status lines wrapped badly in it. Lay the card's
           // first row out as a 12-column grid that keeps each column's width, and let the lines span the name and
-          // "Full legal name" columns underneath them (content.css, .dplus-grid).
+          // "Full legal name" columns underneath them (roster.css, .dplus-grid).
           gridRow = nameSlot.parentElement;
           gridRow.classList.add('dplus-grid');
           put(gridRow, parts, 'dplus-status-span');

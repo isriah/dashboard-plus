@@ -13,7 +13,7 @@
   // Loaded twice (e.g. the page re-injects): leave the first copy in charge.
   if (window.__dashPlus) { window.__dplusSkip = true; return; }
   window.__dplusSkip = false;
-  window.__dashPlus = '0.9.1';
+  window.__dashPlus = '0.9.2';
 
   // ---------- small helpers ----------
 
@@ -52,7 +52,7 @@
   // ---------- on/off: the toolbar button ----------
 
   // bridge.js reports the toolbar's setting as data-dplus="on"/"off" on <html> and fires "dplus:state" when it changes.
-  // Without it (for example when run as a userscript) Dashboard+ is simply on. content.css keys every rule to the same
+  // Without it (for example when run as a userscript) Dashboard+ is simply on. The .css files key every rule to the same
   // attribute, so styles follow automatically; each feature below has an on() and an off() for what it adds to the page.
   const root = document.documentElement;
   if (!root.dataset.dplus) root.dataset.dplus = 'on';

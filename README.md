@@ -13,7 +13,8 @@ without a click.
 ### See what every task actually is
 
 Each team's badges become one count, and underneath sits one plain-English line per cause, what it is holding up, and
-a **Fix** button that opens the page where it gets fixed (clicking anywhere on the line does the same). Roster tasks open
+a **Fix** button that opens the page where it gets fixed (clicking anywhere on the line does the same). When the list of
+what it holds up is too long for the line, hovering the line shows all of it. Roster tasks open
 the team's **Team Roster** tab, a missing school opens Team Information at the School/Organization card, and unpaid
 registration opens Team Finances, instead of the site's links to its old "Create New Team" wizard pages.
 
@@ -80,7 +81,8 @@ Options menu.
 - **Shorter roster cards:** each person's Consent & Release, screening and training lines move under their name, and
   the "Include In Team Roster Printout" / award submitter check boxes move into the empty space beside the
   parent/guardian details. Cards are about a quarter shorter, so a large roster takes far less scrolling. On coach and
-  mentor cards the status lines run under both the name and "Full legal name" columns instead of wrapping in one.
+  mentor cards the status lines run under both the name and "Full legal name" columns instead of wrapping in one (and
+  under the email column too in a narrow window).
 - **One scroll area:** an open team page fills the window below the header and the footer is hidden, so only the team
   page scrolls (never two scrollbars side by side). Before, the Dashboard around it scrolled too, and the site's pop-ups (Invite, Send C&R reminder…)
   could end up hidden under the header.
@@ -88,9 +90,10 @@ Options menu.
 - Drop-downs (Country, Region, Sponsor type…) match the text boxes beside them in font, inset and border.
 - On the roster, parent/guardian names use the same font as every other name (the site styled them as larger grey labels).
 - **Team Events and Awards**: the Event List's columns are rebalanced (each event takes about half the height, and the
-  venue address no longer runs to five lines), the Drop Event button fits its column, voucher expiration dates no
-  longer split the year onto its own line, the voucher NOTICE box is evenly padded with its icon centred, and the
-  Passwords/Voucher Codes headings no longer break mid-word.
+  venue address no longer runs to five lines); in a narrow window, where FIRST's table runs off the edge, each event
+  becomes a small card instead. The voucher table keeps its columns at every width, the Drop Event button fits its
+  column, voucher expiration dates no longer split the year onto its own line, the voucher NOTICE box is evenly padded
+  with its icon centred, and the Passwords/Voucher Codes headings no longer break mid-word.
 - Button rows under each tab heading wrap evenly in a narrow window, and the **Awards List** tiles sit two or three to a row
   instead of one full-width tile per row.
 - Checkboxes in **Communication & Mentoring** (and similar sections) sit beside their labels, not above them.

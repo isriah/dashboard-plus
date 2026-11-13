@@ -1,0 +1,45 @@
+/* Dashboard+ — Profile pages (My Profile, Demographics, My Invitations/Roles, Volunteer Information): layout fixes.
+   Every rule applies only while Dashboard+ is switched on: bridge.js sets data-dplus on <html> from the toolbar
+   button, so turning it off restores the site exactly as it was, without a reload. */
+html[data-dplus="on"] {
+
+  /* Profile pages (My Profile, Demographics, Volunteer Information…): each section's title ("Contact Information"…)
+     sat in a 218px column beside the fields, like the team page cards did. Title above, fields at full width. */
+  .ds-profile-x-panel-split { grid-template-columns: minmax(0, 1fr) !important; }
+  .ds-profile-x-panel-split > * { grid-column: 1 / -1 !important; grid-row: auto !important; }
+  .ds-profile-x-panel-split > .section_header { margin-bottom: 12px; width: auto !important; }
+  .ds-profile-x-panel-split > .x_content { float: none !important; width: 100% !important; margin-left: 0 !important; }
+
+  /* My Profile: the Middle Name / Preferred First Name and Country / Postal Code rows split 7/5 while the rows around
+     them split 6/6, so the second column jumped left and right down the form. */
+  @media (min-width: 768px) {
+    .ds-profile-wizard-myprofile .form-group > .col-md-7:has(#MiddleName, #Country),
+    .ds-profile-wizard-myprofile .form-group > .col-md-5:has(#NickFirstName) {
+      width: 50%;
+    }
+  }
+
+  /* My Invitations/Roles sits 35px further left than the other Profile tabs (My Profile, Acknowledgement Forms, ...),
+     so the title and tab bar jump sideways when switching to it. */
+  .ds-roles-invitation-page .ds-profile-wizard-main {
+    padding-left: 55px;
+    padding-right: 55px;
+  }
+
+  /* Volunteer Information: the Diet Restrictions / Allergies buttons sat in Bootstrap columns of different widths
+     (2, 4, 4, 4, 2, 4 ...), so they formed a ragged patchwork. Put them on an even grid. */
+  .race-block:has(.pif-AllergyList-btn) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    padding: 0 15px; /* the inset the columns used to give, so the buttons line up with the fields below */
+  }
+  .race-block:has(.pif-AllergyList-btn) > * {
+    width: auto !important;
+    float: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .race-block:has(.pif-AllergyList-btn) > :not(:has(.pif-AllergyList-btn)) { grid-column: 1 / -1; }
+  .race-block .pif-AllergyList-btn { width: 100%; }
+}

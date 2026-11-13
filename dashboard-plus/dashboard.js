@@ -14,7 +14,7 @@
   // which scrolled the header's worth plus the footer. Scrolling the Dashboard also pushed the top of the frame under
   // the header, and the site's pop-ups (Invite, Send C&R reminder…) are pinned to the top of the frame, so they could
   // end up completely out of sight. While the frame is showing, fit it exactly between the header and the bottom of
-  // the window and hide the footer (content.css, html.dplus-frame-open), leaving one scroll area.
+  // the window and hide the footer (dashboard.css, html.dplus-frame-open), leaving one scroll area.
   function initFrameFit() {
     if (window.top !== window) return;
     const frame = document.getElementById('appFrame');
@@ -38,7 +38,7 @@
     // The Dashboard's own loading veil (.loader-wrapper: white, over the whole window) also comes up while a team page
     // fetches one section, e.g. switching to Team Events and Awards, so everything looked blocked while Dashboard+'s
     // note in that section said only it was loading. While such a note is showing in the page, drop the veil
-    // (html.dplus-quiet-loader in content.css). It stays for everything else: a page opening, a save, etc.
+    // (html.dplus-quiet-loader in dashboard.css). It stays for everything else: a page opening, a save, etc.
     const veil = document.querySelector('.loader-wrapper');
     let veilTimer = 0;
     // Whether the site wants the veil up: it shows and hides it with jQuery, i.e. an inline display style. (Not its
@@ -81,7 +81,7 @@
 
   // The Dashboard's top bar holds only the FIRST logo (a link to firstinspires.org) and takes 113px of height on every
   // page. Put the same logo and link at the top of the sidebar instead and drop the bar (html.dplus-no-header in
-  // content.css), so everything starts at the top of the window. With the sidebar collapsed, the logo shows just the
+  // dashboard.css), so everything starts at the top of the window. With the sidebar collapsed, the logo shows just the
   // triangle-circle-square mark.
   function initSidebarLogo() {
     if (window.top !== window) return;

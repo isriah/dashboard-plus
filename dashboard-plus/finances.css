@@ -1,0 +1,12 @@
+/* Dashboard+ — Team Finances: Payment History (finances.js).
+   Every rule applies only while Dashboard+ is switched on: bridge.js sets data-dplus on <html> from the toolbar
+   button, so turning it off restores the site exactly as it was, without a reload. */
+html[data-dplus="on"] {
+
+  /* Finances → Payment History: until the first answer arrives (finances.js, initPaymentHistory), hide the site's
+     placeholder "Total amount paid: $0.00" and "Payment records not available", which looked like a real result. */
+  #payment-history:not(.dplus-ph-done) .total-amount-paid,
+  #payment-history:not(.dplus-ph-done) #recordNotFound {
+    display: none !important;
+  }
+}

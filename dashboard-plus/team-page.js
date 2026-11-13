@@ -30,7 +30,7 @@
   // ---------- team page header: room for the red task tooltip ----------
 
   // FIRST shows a blue tooltip ("Lead Coach 2 missing"…) floating just above the active tab when it has open tasks.
-  // With the tighter header (content.css) it would cover the line above the tabs, and its height varies (one to three
+  // With the tighter header (team-page.css) it would cover the line above the tabs, and its height varies (one to three
   // lines), so measure it and let the CSS reserve that much space above the tabs while it is showing.
   function initTabNotice() {
     const tabs = document.querySelector('.team-details-header .tabs-group');

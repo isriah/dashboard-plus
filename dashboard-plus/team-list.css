@@ -1,0 +1,114 @@
+/* Dashboard+ — Team list on the Dashboard home: the reasons listed under each team's task badges (team-list.js).
+   Every rule applies only while Dashboard+ is switched on: bridge.js sets data-dplus on <html> from the toolbar
+   button, so turning it off restores the site exactly as it was, without a reload. */
+html[data-dplus="on"] {
+
+  .dplus-reasons {
+    margin: 0;
+    padding: 6px 16px 8px 24px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #fbf7f7;
+    font-size: 13px;
+    line-height: 20px;
+    color: #1a1a1a;
+  }
+
+  /* dot | reason + tag | holds up (one line, cut off) | Fix */
+
+  /* The reason column is as wide as the longest reason for that team (at most half the row), so "Holds up …"
+     follows close behind it and still lines up from row to row. Rows share the team's columns (subgrid). */
+  .dplus-reasons {
+    display: grid;
+    grid-template-columns: 8px fit-content(50%) minmax(0, 1fr) 44px;
+    column-gap: 16px;
+  }
+  .dplus-reasons.dplus-nofix { grid-template-columns: 8px fit-content(50%) minmax(0, 1fr); }
+  .dplus-reason {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    align-items: center;
+    padding: 3px 6px;
+    margin: 0 -6px;
+    border-radius: 4px;
+  }
+  .dplus-reason + .dplus-reason { border-top: 1px dashed #ecdede; }
+
+  /* A row with a Fix button opens the page from anywhere on the row. */
+  .dplus-reason.dplus-clickable { cursor: pointer; }
+  .dplus-reason.dplus-clickable:hover { background: #eef4fb; }
+  .dplus-reason.dplus-clickable:hover .dplus-link { background: var(--ds-color-primary, #0066b3); color: #fff; }
+  .dplus-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #c8102e;
+  }
+  .dplus-reason-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 8px;
+    min-width: 0;
+  }
+  .dplus-reason-text { font-weight: 600; }
+  .dplus-tag {
+    padding: 0 6px;
+    border-radius: 4px;
+    background: #c8102e;
+    color: #fff;
+    font-size: 10px;
+    line-height: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+  .dplus-areas {
+    position: relative;
+    min-width: 0;
+    color: #6b7280;
+    font-size: 12px;
+  }
+  .dplus-areas-text {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* Hovering a row whose "Holds up …" was cut off shows the whole list in a card just under it (team-list.js marks
+     which ones are cut). It sits over the next row rather than pushing the rows down. */
+  .dplus-reason:hover .dplus-areas.dplus-cut::after {
+    content: attr(data-full);
+    position: absolute;
+    top: calc(100% + 4px);
+    left: -8px;
+    right: -8px;
+    z-index: 30;
+    padding: 6px 8px;
+    border: 1px solid #d5dde8;
+    border-radius: 4px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    color: #374151;
+    white-space: normal;
+    line-height: 17px;
+    pointer-events: none;
+  }
+  .dplus-link {
+    justify-self: end;
+    width: 44px;
+    padding: 0;
+    border: 1px solid var(--ds-color-primary, #0066b3);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--ds-color-primary, #0066b3);
+    font: inherit;
+    font-size: 12px;
+    line-height: 20px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .dplus-link:hover { background: var(--ds-color-primary, #0066b3); color: #fff; }
+}

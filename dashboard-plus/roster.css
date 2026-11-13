@@ -1,0 +1,258 @@
+/* Dashboard+ — Team Roster: compact roster cards, highlights and the Roster at a glance panel (roster.js).
+   Every rule applies only while Dashboard+ is switched on: bridge.js sets data-dplus on <html> from the toolbar
+   button, so turning it off restores the site exactly as it was, without a reload. */
+html[data-dplus="on"] {
+
+  /* Team Roster tab: the roster sits in a column flexbox without a width, so it shrank to its contents and stopped
+     short of the right edge that the other tabs reach. */
+  .team-content > #acct-roster-accordion { align-self: stretch; }
+
+  /* Team Roster: "Print Prior Season Roster" comes disabled whenever FIRST won't let this account see the team's
+     prior-season roster (on some teams without any explanation), so it only looked broken. Hide it when disabled. */
+  .printable-roster-wrapper:has(> #show-prior-season-printable-roster:disabled) { display: none !important; }
+
+  /* Roster, youth rows: the parent/guardian's name is wrapped in a <label>, so the site's label style made it larger and
+     grey, unlike every other name on the roster. Match the plain 13px text around it. */
+
+  /* Roster: each person's status lines and check boxes, moved under their name by roster.js (initRosterCompact). */
+  .roster-status-row.dplus-emptied { display: none; }
+  .dplus-status-stack { margin-top: 4px; }
+  .dplus-status-stack > [class*="col-"] {
+    float: none;
+    width: auto;
+    padding: 0;
+    text-align: left !important;
+    line-height: 18px; /* the roster's columns use a 31px line height, which doubled the height of these lines */
+    min-height: 0;
+  }
+  .dplus-status-stack .ds-text-body { font-size: 12px; line-height: 18px; }
+  .dplus-status-stack > [class*="col-"] > div {
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+
+  /* The youth template right-aligns its check box column. */
+  .dplus-status-stack .flex-column-end { align-items: flex-start !important; }
+  .dplus-status-stack .roster-printout-check {
+    justify-content: flex-start !important;
+    font-size: 12px;
+    text-align: left;
+  }
+  .roster-parent-row .dplus-status-stack { margin-top: 0; }
+
+  /* Adult cards: the first row as a 12-column grid keeping each Bootstrap column's width, with the status lines
+     underneath spanning the name and "Full legal name" columns (5 of 12) instead of the name column alone. */
+  .roster-contact-card .row.dplus-grid {
+    display: grid !important;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: start;
+  }
+  .roster-contact-card .row.dplus-grid::before,
+  .roster-contact-card .row.dplus-grid::after { display: none !important; }
+  .roster-contact-card .row.dplus-grid > [class*="col-"] { width: auto !important; float: none !important; min-width: 0; grid-row: 1; }
+  .roster-contact-card .row.dplus-grid > .col-md-1 { grid-column: span 1; }
+  .roster-contact-card .row.dplus-grid > .col-md-2 { grid-column: span 2; }
+  .roster-contact-card .row.dplus-grid > .col-md-3 { grid-column: span 3; }
+  .roster-contact-card .row.dplus-grid > .col-md-4 { grid-column: span 4; }
+  .roster-contact-card .row.dplus-grid > .col-md-5 { grid-column: span 5; }
+  .roster-contact-card .row.dplus-grid > .col-md-6 { grid-column: span 6; }
+  .roster-contact-card .row.dplus-grid > .dplus-status-span {
+    grid-column: 1 / span 5;
+    grid-row: 2;
+    margin-top: 2px;
+    padding: 0 15px;
+  }
+
+  /* In a narrow window those two columns are too slim and every line wraps; run under the email column as well. */
+  @media (max-width: 991px) {
+    .roster-contact-card .row.dplus-grid > .dplus-status-span { grid-column: 1 / span 8; }
+    /* FIRST's Options drop-down is at least 130px, wider than its column here, so it stuck out past the card. */
+    .roster-contact-card .row.dplus-grid .roster-options-select {
+      min-width: 0 !important;
+      width: 100% !important;
+      padding-left: 8px !important;
+      padding-right: 22px !important;
+      background-position: right 6px center !important;
+    }
+  }
+
+  .roster-parent-row label#LegalGuardian {
+    font: inherit;
+    color: inherit;
+    margin: 0;
+  }
+
+  #dplus-roster-panel {
+    margin: 16px 0;
+    padding: 14px 16px;
+    border: 1px solid #c9d7e8;
+    border-radius: 8px;
+    background: #f5f9ff;
+    font-size: 14px;
+    line-height: 1.45;
+    color: #1a1a1a;
+  }
+  .dplus-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .dplus-badge {
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--ds-color-primary, #0066b3);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  /* Roster at a glance: an even grid of six tiles: one row of six when there is room, otherwise two rows of three
+     (or three of two when very narrow), never a lone tile on a row of its own. */
+  #dplus-roster-panel { container-type: inline-size; }
+  .dplus-stats {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  @container (max-width: 960px) { .dplus-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @container (max-width: 480px) { .dplus-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .dplus-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 10px 12px;
+    border: 1px solid #d9e2ee;
+    border-left: 4px solid #d9e2ee;
+    border-radius: 6px;
+    background: #fff;
+  }
+  .dplus-stat-n { font-size: 22px; line-height: 26px; font-weight: 700; color: #1a1a1a; }
+  .dplus-stat-label { font-size: 13px; line-height: 17px; color: #3c4450; }
+  .dplus-stat-detail { font-size: 12px; line-height: 16px; color: #6b7280; }
+  .dplus-stat.dplus-warn { border-color: #f0d9a0; border-left-color: #e0a100; background: #fffaf0; }
+  .dplus-stat.dplus-warn .dplus-stat-n { color: #8a5a00; }
+  .dplus-stat-label, .dplus-stat-detail { margin-bottom: 6px; }
+  .dplus-stat { position: relative; }
+
+  /* "Show who" card under a tile: the people behind its count. */
+  .dplus-who {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 20;
+    min-width: 260px;
+    max-width: 360px;
+    max-height: 320px;
+    overflow: auto;
+    padding: 10px 12px;
+    border: 1px solid #c9d7e8;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+    font-size: 13px;
+  }
+  .dplus-stat:nth-child(3n) .dplus-who { left: auto; right: 0; } /* right-hand column: open leftwards */
+  .dplus-who-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .dplus-who-close {
+    border: 0;
+    background: none;
+    font-size: 18px;
+    line-height: 1;
+    color: #5c6470;
+    cursor: pointer;
+  }
+  .dplus-who ul { list-style: none; margin: 0; padding: 0; }
+  .dplus-who li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 0;
+    border-top: 1px solid #eef1f5;
+  }
+  .dplus-who-name {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ds-color-primary, #0066b3);
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+  }
+  .dplus-who-name:hover { text-decoration: underline; }
+  .dplus-who-role { color: #6b7280; white-space: nowrap; }
+
+  /* Roster cards of people missing Consent & Release, screening or training (roster.js, initRosterHighlights):
+     the same amber as the "needs attention" tiles above. */
+  .roster-contact-card.dplus-attention {
+    background: #fffaf0;
+    /* Background and amber edge drawn a little outside the card, so the name keeps its spacing from the edge. */
+    box-shadow: -10px 0 0 #fffaf0, -14px 0 0 #e0a100, 10px 0 0 #fffaf0;
+  }
+
+  /* The person's roster card, briefly highlighted after "Show who" → name. */
+  .roster-contact-card.dplus-flash {
+    outline: 3px solid #e0a100;
+    outline-offset: 2px;
+    transition: outline-color 0.4s;
+  }
+
+  /* The action sits at the foot of its tile, so buttons line up across a row. */
+  .dplus-stat .dplus-stat-action {
+    margin-top: auto;
+    padding: 4px 10px;
+    font-size: 12px;
+    align-self: stretch;
+  }
+  .dplus-note { margin: 0 0 10px; color: #3c4450; }
+  .dplus-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .dplus-btn {
+    padding: 7px 14px;
+    border: 1px solid var(--ds-color-primary, #0066b3);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--ds-color-primary, #0066b3);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .dplus-btn:hover:not(:disabled) { background: #e6f0fa; }
+  .dplus-btn.dplus-primary { background: var(--ds-color-primary, #0066b3); color: #fff; }
+  .dplus-btn.dplus-primary:hover:not(:disabled) { filter: brightness(0.92); background: var(--ds-color-primary, #0066b3); }
+  .dplus-btn:disabled { border-color: #c5ccd6; background: #eef1f5; color: #8a93a0; cursor: default; }
+  .dplus-outcome { color: #3c4450; }
+
+  .dplus-table {
+    width: 100%;
+    margin: 0 0 12px;
+    border-collapse: collapse;
+    background: #fff;
+  }
+  .dplus-table th,
+  .dplus-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #e3e8ef;
+    text-align: left;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+  }
+  .dplus-table th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; color: #5c6470; }
+  .dplus-table th:first-child,
+  .dplus-table td:first-child { width: 34px; }
+  .dplus-table input[type="checkbox"] { width: 16px; height: 16px; margin: 0; display: block; }
+  .dplus-group td { background: #eef3f9; font-weight: 700; }
+  .dplus-status { color: #5c6470; white-space: nowrap; }
+  .dplus-status.dplus-ok { color: #1b7a3d; font-weight: 600; }
+  .dplus-status.dplus-bad { color: #c8102e; font-weight: 600; white-space: normal; }
+}
