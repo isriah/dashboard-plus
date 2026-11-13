@@ -237,6 +237,19 @@ Measured on 2026-11-12 from one browser, one sample each unless noted. Treat as 
 | Roster fragment, team with 1 person | 1.5 s | 150k chars |
 | Roster fragment, team with about 110 people | **52 s and 57 s** (two samples) | 518k chars |
 | `GetPersonStatus` for 1 person | 0.5 s | 300 chars |
+| Roster fragment, large real team (later sample) | **68 s** | 79 kB transferred |
+| `GetPersonStatus` for that whole roster, right after it | **27 s**, synchronous | 32 kB transferred |
+| Team Events and Awards tab (`GetTeamEvents`, `GetSeasonSpecificVouchers`) | 0.4 s + 1.6 s | small |
+| Team Finances tab (`EditFinancialGuarantor`, `PaymentHistory`) | 1.0 s + 0.3 s | small |
+| Opening a team page from the team list (iframe load) | about 6.5 s end to end | — |
+
+- **The roster freezes the whole Dashboard after it arrives.** Once the roster's HTML is inserted, its script calls
+  `getPersonStatuses()`, a jQuery `$.ajax` with `async: false` for every person's screening and training status. On a
+  large team that blocks the page's only thread for about half a minute: nothing repaints, clicks do nothing, and
+  automation tools time out. Measured total from tab click to a usable roster: about 2 minutes. Dashboard+ cannot make
+  the call asynchronous without rewriting the site's roster script, so its "Loading the roster…" message warns that
+  the page may stop responding after the roster appears. The site's own dimmed overlay disappears after a few
+  seconds, long before the roster arrives.
 
 - **The roster is the bottleneck.** Time grows with head count at roughly half a second per person. **Guess:** the server looks up each person's screening and training status one at a time while building the page (the single-person status call also takes about half a second).
 - Because the site reloads the roster after every single action, accepting N applicants on a big team costs about N minutes of waiting. Doing the N actions first and reloading once is the main win Dashboard+ can offer.

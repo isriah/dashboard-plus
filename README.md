@@ -20,6 +20,13 @@ a **Fix** button that opens the exact page where it gets fixed.
 The site's own text for these is often a raw key (`val.team_contacts:1`) or nothing at all. Dashboard+ also shows an
 "Opening the page…" message while a Fix page loads, instead of the site's blank screen.
 
+### Know when the site is still working
+
+A large team's roster takes FIRST over a minute to send, and until now the **Team Roster** tab just sat blank. Dashboard+
+shows "Loading the roster…" with a seconds counter until it arrives. It also warns that the page may stop responding
+for a while afterwards, while the site looks up everyone's screening. The same message appears for any other section
+of a team page that takes more than a moment to load.
+
 ### Jump between personas from the sidebar
 
 **Team**, **Event Volunteer**, **Parent/Guardian** and **Class Pack** get their own sidebar buttons (visible in the
@@ -47,10 +54,22 @@ Options menu.
 
 ### Layout fixes
 
+**Team pages**
+- Each tab's content lines up with the team name and tabs above it, instead of sitting 15px to the left.
+- The **Team Roster** tab fills the page width like the other tabs, and its Expand All row lines up with the heading.
+- Drop-downs (Country, Region, Sponsor type…) match the text boxes beside them in font, inset and border.
 - Checkboxes in **Communication & Mentoring** (and similar sections) sit beside their labels, not above them.
-- The team list's **Participating Team** column no longer runs off the edge at narrow widths.
+- "My team is participating" and its **Secured for this season** badge sit on one line.
+- A lone sponsor no longer shows a "swap down" arrow with nothing to swap with.
 - The task tooltip over the first team tab is no longer cut off.
 - The older roster wizard no longer draws its "Create New Team" header and step bar twice.
+
+**Elsewhere**
+- The team list's **Participating Team** column no longer runs off the edge at narrow widths.
+- **My Profile**: the second column of fields lines up all the way down the form.
+- **My Invitations/Roles** lines up with the other Profile tabs instead of jumping sideways.
+- **Volunteer Information**: the diet restriction buttons sit on an even grid instead of a ragged patchwork.
+- The sidebar persona marker clears when you're on Youth Protection, My Account and other non-dashboard pages.
 
 ## Install
 

@@ -22,6 +22,10 @@
   margin: 0;
   line-height: 18px;
 }
+/* The team page header's "My team is participating" row uses the same class and adds a taller "Secured for this
+   season" badge: centre everything on one line there instead of pinning it to the top. */
+.participation-section:has(> .season-secured-badge) { align-items: center !important; }
+.participation-section:has(> .season-secured-badge) > input[type="checkbox"] { margin: 0 !important; }
 
 /* The reason tooltip above the first tab was centred on the tab and ran off the left edge of the window. */
 .tabs-group > .team-tab-container:first-child > .outstanding-notification {
@@ -42,6 +46,64 @@
 .sidenav .stepper {
   display: none !important;
 }
+
+/* Team page: the body under the tabs is a Bootstrap .row, whose -15px side margins put every tab's content 15px to the
+   left of the team name, tabs and buttons above it. */
+.team-content.row.p-lr-50 {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* Team Roster tab: the roster sits in a column flexbox without a width, so it shrank to its contents and stopped
+   short of the right edge that the other tabs reach. */
+.team-content > #acct-roster-accordion { align-self: stretch; }
+/* Its Expand All / Close All / Printable Roster row started 16px in from the heading above it. */
+#acct-roster-accordion > div:has(> .btn-cancel) > :first-child { margin-left: 0; }
+
+/* Team Information and Finances: drop-downs (Country, Region, School/Organization type, Sponsor type, season) used a
+   smaller font, a different inset, border and corner radius than the text boxes next to them. */
+.accordion-body-custom select.ds-select__field {
+  font-size: 16px;
+  padding-left: 12px;
+  border-color: rgb(226, 232, 240);
+  border-radius: 6px;
+}
+
+/* Sponsors: the last (or only) sponsor showed a lone "swap down" arrow that has nothing to swap with. */
+#section-partner > .accordion-body-section2:last-child .glyphicon-arrow-down { display: none; }
+
+/* My Profile: the Middle Name / Preferred First Name and Country / Postal Code rows split 7/5 while the rows around
+   them split 6/6, so the second column jumped left and right down the form. */
+@media (min-width: 768px) {
+  .ds-profile-wizard-myprofile .form-group > .col-md-7:has(#MiddleName, #Country),
+  .ds-profile-wizard-myprofile .form-group > .col-md-5:has(#NickFirstName) {
+    width: 50%;
+  }
+}
+
+/* My Invitations/Roles sits 35px further left than the other Profile tabs (My Profile, Acknowledgement Forms, ...),
+   so the title and tab bar jump sideways when switching to it. */
+.ds-roles-invitation-page .ds-profile-wizard-main {
+  padding-left: 55px;
+  padding-right: 55px;
+}
+
+/* Volunteer Information: the Diet Restrictions / Allergies buttons sat in Bootstrap columns of different widths
+   (2, 4, 4, 4, 2, 4 ...), so they formed a ragged patchwork. Put them on an even grid. */
+.race-block:has(.pif-AllergyList-btn) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  padding: 0 15px; /* the inset the columns used to give, so the buttons line up with the fields below */
+}
+.race-block:has(.pif-AllergyList-btn) > * {
+  width: auto !important;
+  float: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+.race-block:has(.pif-AllergyList-btn) > :not(:has(.pif-AllergyList-btn)) { grid-column: 1 / -1; }
+.race-block .pif-AllergyList-btn { width: 100%; }
 
 /* Dashboard tables (team list and the like): every column has a 7px margin on each side that the site's percentage
    widths do not allow for, so the last column ("Participating Team") ran past the table's right edge. Let the columns
@@ -151,12 +213,15 @@
 .dplus-persona .menu-item-label { font-size: 14px; }
 .dplus-persona.dplus-current { box-shadow: inset 3px 0 0 var(--ds-color-primary, #0066b3); }
 .dplus-persona.dplus-current .menu-item-label { font-weight: 700; }
+/* On Youth Protection, My Account and the other sidebar pages, no persona is being shown: drop the marker. */
+#dashboard-select:not(.active-menu) + #dplus-personas .dplus-current { box-shadow: none; }
+#dashboard-select:not(.active-menu) + #dplus-personas .dplus-current .menu-item-label { font-weight: inherit; }
 .dplus-persona:focus-visible { outline: 2px solid var(--ds-color-primary, #0066b3); outline-offset: -2px; }
 .sidebar.collapsed .dplus-persona { justify-content: center; }
 .sidebar.collapsed .dplus-persona img { margin: auto; }
 
-/* Shown while a Fix link's page loads in the Dashboard's hidden frame. */
-#dplus-opening {
+/* "Opening the page…" (a Fix link's page loading in the Dashboard's hidden frame) and "Loading the roster…". */
+.dplus-wait {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -179,11 +244,16 @@
   animation: dplus-spin 0.9s linear infinite;
 }
 @keyframes dplus-spin { to { transform: rotate(360deg); } }
+/* Inside a team page tab (a column flexbox), take the full width and line up with the tab's content. */
+.team-content > .dplus-wait {
+  align-self: stretch;
+  margin: 16px 0;
+}
 
 /* ---------- roster panel ---------- */
 
 #dplus-roster-panel {
-  margin: 0 0 16px;
+  margin: 16px 0;
   padding: 14px 16px;
   border: 1px solid #c9d7e8;
   border-radius: 8px;

@@ -9,7 +9,7 @@
 (() => {
   'use strict';
   if (window.__dashPlus) return;
-  window.__dashPlus = '0.3.1';
+  window.__dashPlus = '0.5.0';
 
   // ---------- small helpers ----------
 
@@ -126,21 +126,68 @@
   function showOpening() {
     const frame = document.getElementById('appFrame');
     if (!frame) return;
-    document.getElementById('dplus-opening')?.remove();
+    const note = waitNote(frame, 'dplus-opening', 'Opening the page…',
+      'FIRST\'s team pages can take a minute or more to load, longer for big rosters.');
+    const done = () => { note.done(); frame.removeEventListener('load', done); };
+    frame.addEventListener('load', done);
+  }
+
+  // A "still loading" message with a spinner and a seconds counter, placed just before `anchor`. done() removes it.
+  function waitNote(anchor, id, title, hint) {
+    document.getElementById(id)?.remove();
     const started = Date.now();
     const elapsed = el('span', { text: '' });
-    const note = el('div', { id: 'dplus-opening', role: 'status' },
+    const note = el('div', { id, class: 'dplus-wait', role: 'status' },
       el('span', { class: 'dplus-spinner' }),
-      el('div', {},
-        el('b', { text: 'Opening the page…' }), ' ', elapsed,
-        el('div', { text: 'FIRST\'s team pages can take a minute or more to load, longer for big rosters.' })));
-    frame.before(note);
+      el('div', {}, el('b', { text: title }), ' ', elapsed, hint && el('div', { text: hint })));
+    anchor.before(note);
     const tick = setInterval(() => {
       const s = Math.round((Date.now() - started) / 1000);
       elapsed.textContent = s >= 5 ? '(' + s + ' s)' : '';
     }, 1000);
-    const done = () => { clearInterval(tick); note.remove(); frame.removeEventListener('load', done); };
-    frame.addEventListener('load', done);
+    return { done: () => { clearInterval(tick); note.remove(); } };
+  }
+
+  // ---------- team pages: say so when a section is slow to load ----------
+
+  // Team page tabs fill their sections with jQuery's .load(). The roster is the slow one (over a minute for a large
+  // team) and showed only a blank area meanwhile. Any .load() still going after a moment gets a message with a timer.
+  const SLOW_LOADS = {
+    'acct-roster-accordion': {
+      title: 'Loading the roster…',
+      hint: 'Large teams can take a minute or more. When it arrives the page can stop responding for up to half a minute ' +
+        'while FIRST looks up everyone\'s screening and training.',
+    },
+  };
+
+  function initSlowLoads() {
+    const jq = window.jQuery;
+    if (!jq || !jq.fn || !jq.fn.load || jq.fn.load.__dplus) return;
+    const original = jq.fn.load;
+    const wrapped = function (url, ...rest) {
+      // .load(fn) with no URL is the old "load event" shortcut, not a fetch: leave it alone.
+      if (typeof url !== 'string' || this.length !== 1) return original.call(this, url, ...rest);
+      const target = this[0];
+      const known = SLOW_LOADS[target.id];
+      let note = null, finished = false;
+      const timer = setTimeout(() => {
+        if (finished || !target.isConnected) return;
+        note = waitNote(target, 'dplus-wait-' + (target.id || 'section'),
+          known ? known.title : 'Loading…', known ? known.hint : 'FIRST is slow to answer right now.');
+      }, known ? 0 : 1500);
+      const finish = () => { finished = true; clearTimeout(timer); if (note) note.done(); };
+      // Clear the message in the page's own completion callback (added if the call has none).
+      const at = rest.findIndex((a) => typeof a === 'function');
+      if (at >= 0) {
+        const cb = rest[at];
+        rest[at] = function (...args) { finish(); return cb.apply(this, args); };
+      } else {
+        rest.push(function () { finish(); });
+      }
+      return original.call(this, url, ...rest);
+    };
+    wrapped.__dplus = true;
+    jq.fn.load = wrapped;
   }
 
   function renderReasons(team, reasons) {
@@ -330,7 +377,11 @@
     function showSummary() {
       const r = readRoster();
       if (!r) { panel.remove(); return; }
-      if (!panel.isConnected) box.before(panel);
+      if (!panel.isConnected) {
+        // Under the roster's own title and Expand All / Printable Roster row, above the first section.
+        const bar = box.querySelector(':scope > div:has(> .btn-cancel)');
+        if (bar) bar.after(panel); else box.before(panel);
+      }
       const waiting = r.youthApplied.length + r.mentorApps.length;
       const noCR = r.peopleNoCR.length + r.mentorAppsNoCR.length + r.youthNoCR.length;
       const stat = (n, label, warn, title) => el('div', { class: 'dplus-stat' + (warn && n > 0 ? ' dplus-warn' : ''), title: title || null },
@@ -450,7 +501,7 @@
           title: 'Large rosters can take a minute to come back',
           onclick: () => {
             busy = false;
-            fill(panel, el('div', { class: 'dplus-note', text: 'Reloading the roster. Large rosters can take a minute.' }));
+            // The roster's own "Loading the roster…" message (see initSlowLoads) takes over from here.
             if (typeof window.reloadRoster === 'function') window.reloadRoster(); else location.reload();
           },
         });
@@ -628,6 +679,7 @@
     })();
   }
 
+  initSlowLoads();
   initPersonaButtons();
   initTeamList();
   initRoster();
