@@ -13,7 +13,9 @@ without a click.
 ### See what every task actually is
 
 Each team's badges become one count, and underneath sits one plain-English line per cause, what it is holding up, and
-a **Fix** button that opens the exact page where it gets fixed (clicking anywhere on the line does the same).
+a **Fix** button that opens the page where it gets fixed (clicking anywhere on the line does the same). Roster tasks open
+the team's **Team Roster** tab, a missing school opens Team Information at the School/Organization card, and unpaid
+registration opens Team Finances, instead of the site's links to its old "Create New Team" wizard pages.
 
 ![Team list with each team's tasks spelled out under it, each with a Fix button](docs/team-list.png)
 

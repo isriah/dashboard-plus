@@ -9,7 +9,7 @@
 (() => {
   'use strict';
   if (window.__dashPlus) return;
-  window.__dashPlus = '0.7.1';
+  window.__dashPlus = '0.7.3';
 
   // ---------- small helpers ----------
 
@@ -148,6 +148,58 @@
 
   // The Dashboard opens team pages in a hidden frame and hides its own spinner as soon as its small "which page?"
   // request finishes, so a slow team page shows as a blank screen. Keep a message up until the page arrives.
+  // Where Fix goes. The site's own link (GenerateNotificationResolutionURL) sends several tasks to pages of its older
+  // "Create New Team" wizard: roster tasks to /Teams/wizard/TeamContacts/1 (slow, titled "Create New Team" for an
+  // existing team), a missing school to /Teams/wizard/EditTeam/2 (also "Create New Team"), and unpaid registration to
+  // /Teams/wizard/Payment/1, which bounces back to the Dashboard and loads it inside itself. For those, open the
+  // normal team page on the right tab instead. Anything else keeps the site's link.
+  const FIX_ON_TEAM_PAGE = {
+    'val_team_pending_applications': { tab: 'roster' },
+    'val_coach-1_missing': { tab: 'roster' },
+    'val_coach-2_missing': { tab: 'roster' },
+    'val_team_not_2leadcoaches_screened': { tab: 'roster' },
+    'val_team_not_registered': { tab: 'finances' },
+    'val_team_partners_school_partner_missing': { tab: 'info', section: 'School/Organization' },
+  };
+  function fixTarget(r) {
+    return FIX_ON_TEAM_PAGE[r.key] || (r.roster ? { tab: 'roster' } : null);
+  }
+
+  // Opens a team's page in the Dashboard (as clicking the team does) and leaves a note for that page, read by
+  // openRequestedTab() once it loads, saying which tab (and section) to show. sessionStorage is shared by the
+  // Dashboard and the page in its frame, and is cleared when the browser tab closes.
+  function openTeamPage(team, target) {
+    const row = document.querySelector('#team-list-rows .table-row[data-url*="TeamProfileID=' + team.fk_team_profiles + '"]');
+    const url = row && row.getAttribute('data-url');
+    const load = typeof window.LoadUrl === 'function' ? window.LoadUrl
+      : typeof window.LoadApplicationInIframe === 'function' ? window.LoadApplicationInIframe : null;
+    if (!url || !load) return false;
+    try {
+      sessionStorage.setItem('dplus.openTab', JSON.stringify({ id: team.fk_team_profiles, ...target, at: Date.now() }));
+    } catch (err) { /* storage blocked: the page opens on its first tab */ }
+    load(url);
+    return true;
+  }
+
+  // On a team page: if the Dashboard asked for a particular tab (see openTeamPage), show it.
+  function openRequestedTab() {
+    let want = null;
+    try { want = JSON.parse(sessionStorage.getItem('dplus.openTab') || 'null'); } catch (err) { return; }
+    const id = new URLSearchParams(location.search).get('TeamProfileID');
+    if (!want || !id || String(want.id) !== id) return;
+    try { sessionStorage.removeItem('dplus.openTab'); } catch (err) { /* ignore */ }
+    if (!isOn() || Date.now() - want.at > 5 * 60 * 1000) return;
+    const btn = document.getElementById('tab-btn-' + want.tab);
+    if (btn && !btn.classList.contains('active')) btn.click();
+    if (want.section) {
+      setTimeout(() => {
+        const title = [...document.querySelectorAll('.accordion-title')].find((t) => t.textContent.trim() === want.section);
+        const card = title && title.closest('.accordion-item-custom');
+        if (card) card.scrollIntoView({ block: 'start' });
+      }, 300);
+    }
+  }
+
   function showOpening() {
     const frame = document.getElementById('appFrame');
     if (!frame) return;
@@ -227,7 +279,13 @@
     const fixable = canFix && typeof window.GetResolutionURL === 'function';
     // One row per cause: reason (and its tag) | what it holds up, on one line | Fix, lined up on the right.
     // The site's own function asks the server for the right page and opens it.
-    const fix = (r) => (e) => { e.stopPropagation(); showOpening(); window.GetResolutionURL(r.step, team.fk_team_profiles); };
+    const fix = (r) => (e) => {
+      e.stopPropagation();
+      showOpening();
+      const target = fixTarget(r);
+      if (target && openTeamPage(team, target)) return;
+      window.GetResolutionURL(r.step, team.fk_team_profiles);
+    };
     return el('div', { class: 'dplus-reasons' + (fixable ? '' : ' dplus-nofix') }, reasons.map((r) => el('div', {
       class: 'dplus-reason' + (fixable ? ' dplus-clickable' : ''),
       // The whole row opens the page, not just the Fix button at the far right. (Keyboard users have the button.)
@@ -1007,6 +1065,7 @@
     return group;
   }
 
+  openRequestedTab();
   initSlowLoads();
   initFrameFit();
   initTabNotice();
