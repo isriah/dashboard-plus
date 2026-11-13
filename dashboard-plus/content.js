@@ -9,7 +9,7 @@
 (() => {
   'use strict';
   if (window.__dashPlus) return;
-  window.__dashPlus = '0.7.3';
+  window.__dashPlus = '0.8.5';
 
   // ---------- small helpers ----------
 
@@ -242,7 +242,197 @@
     },
   };
 
+  // ---------- team pages: say so when the next page is slow to arrive ----------
+
+  // Some buttons send the whole team page to another page of FIRST's: Printable Roster goes to the older roster wizard
+  // (/Teams/Wizard/TeamContacts/3), which builds the roster from scratch and can take a minute or more. Until it
+  // arrives the old page just sits there, so it looked as if nothing had happened. When a team page starts loading
+  // another FIRST page, cover it with a message and a timer. Uses the browser's Navigation API, which reports real page
+  // loads only (not email links or downloads), and the cover can be dismissed in case the page stays.
+  let lastClickLabel = '';
+  function initLeavingNote() {
+    if (!/\/(Teams|Profile)\//i.test(location.pathname) || !window.navigation) return;
+    document.addEventListener('click', (e) => {
+      const b = e.target.closest && e.target.closest('button, a, [onclick], [role="button"]');
+      lastClickLabel = b ? (b.textContent || '').replace(/\s+/g, ' ').trim() : '';
+    }, true);
+    window.navigation.addEventListener('navigate', (e) => {
+      if (!isOn() || e.hashChange || e.downloadRequest) return;
+      let dest;
+      try { dest = new URL(e.destination.url); } catch (err) { return; }
+      if (dest.origin !== location.origin) return;
+      const printable = /Printable Roster/i.test(lastClickLabel) || /PrintableRoster=/i.test(dest.search);
+      showLeavingNote(printable ? 'Opening the printable roster…' : 'Opening the page…',
+        printable
+          ? 'FIRST builds the printable roster from scratch, which can take a minute or more on a large team.'
+          : 'FIRST can take a while to answer.');
+    });
+  }
+
+  function showLeavingNote(title, hint) {
+    document.getElementById('dplus-leaving')?.remove();
+    const cover = el('div', { id: 'dplus-leaving' });
+    const hide = el('button', { class: 'dplus-btn', type: 'button', text: 'Hide', onclick: () => cover.remove() });
+    document.body.append(cover);
+    waitNote(cover.appendChild(el('span')), 'dplus-leaving-note', title, hint);
+    cover.querySelector('#dplus-leaving-note')?.append(hide);
+  }
+
+  // ---------- roster: show the last copy at once, and no frozen page ----------
+
+  // A large roster takes FIRST about a minute to build, and when it arrives the page asks for every adult's screening
+  // and training with a synchronous request (GetPersonStatus) that freezes the whole Dashboard for up to half a minute.
+  //
+  // 1. Repeat visits: the last roster seen for each team is kept in memory in the Dashboard window (never written to
+  //    storage; gone when the Dashboard tab is closed or reloaded, and ignored after 30 minutes). Opening the roster
+  //    again shows that copy at once, but only under an "updating…" banner and with everything on it disabled (inert)
+  //    until the fresh roster replaces it. A roster that is being reloaded (after an action) is treated the same way.
+  // 2. No freeze: the fresh roster is held back while its screening/training lookup runs in the background (the page
+  //    stays usable, with a message), then handed to the page; the page's own synchronous lookup is answered from
+  //    that result instantly.
+  // If anything unexpected happens, it falls back to the site's own loading.
+  const ROSTER_KEEP_MS = 30 * 60 * 1000;
+  const STATUS_URL = /\/TeamContacts\/GetPersonStatus/i;
+  const statusAnswers = new Map(); // ids key → response text, for the page's synchronous lookup
+
+  function rosterCache() {
+    try {
+      const top = window.top;
+      return top.__dplusRosters || (top.__dplusRosters = new Map());
+    } catch (err) {
+      return window.__dplusRosters || (window.__dplusRosters = new Map());
+    }
+  }
+
+  const idsKey = (ids) => ids.map(String).filter(Boolean).sort().join(',');
+
+  // The adults the page will look up: exactly what its own script collects (PeopleRoles, then mentor applicants).
+  function rosterPeopleIds(html) {
+    const m = /var\s+teamContactsModel\s*=\s*(.*?);?\s*$/m.exec(html);
+    if (!m) return null;
+    try {
+      const model = JSON.parse(m[1]);
+      return [
+        ...(model.PeopleRoles || []).map((p) => p.peopleId),
+        ...(model.ExpressInvitationsList || []).map((p) => p.FkPeople),
+      ];
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function initStatusAnswers() {
+    const jq = window.jQuery;
+    if (!jq || !jq.ajaxTransport || jq.__dplusStatus) return;
+    jq.__dplusStatus = true;
+    // Answer the page's synchronous GetPersonStatus request from the result fetched in the background, if we have
+    // it for exactly these people. Returning nothing lets jQuery send the request as normal.
+    jq.ajaxTransport('+*', (opts) => {
+      // Dashboard+'s own background lookup always goes to FIRST (never answered from memory).
+      if (opts.dplusFresh || !STATUS_URL.test(opts.url || '')) return undefined;
+      const ids = new URLSearchParams((opts.url.split('?')[1] || '') + '&' + (typeof opts.data === 'string' ? opts.data : '')).getAll('ids');
+      const key = idsKey(ids);
+      const text = statusAnswers.get(key);
+      if (text == null) return undefined;
+      statusAnswers.delete(key); // one use: the page's lookup for the roster just inserted
+      return {
+        send(headers, done) { done(200, 'success', { text }, 'Content-Type: application/json; charset=utf-8'); },
+        abort() {},
+      };
+    });
+  }
+
+  function ajaxText(jq, settings) {
+    return new Promise((resolve, reject) => {
+      jq.ajax(settings).done((data, s, xhr) => resolve(xhr.responseText)).fail((xhr) => reject(new Error('HTTP ' + (xhr && xhr.status))));
+    });
+  }
+
+  let rosterLoading = null; // { box, fromCache, finish } while a roster load is in progress
+
+  // Switching Dashboard+ off during a load: a copy from memory must not stay on screen without its banner, so it is
+  // removed (the site itself shows an empty roster while loading). A roster that was already showing (a reload) stays,
+  // as it would without Dashboard+. The load itself carries on and fills the roster when it arrives.
+  feature({
+    on() {},
+    off() {
+      if (!rosterLoading) return;
+      if (rosterLoading.fromCache) rosterLoading.box.replaceChildren();
+      rosterLoading.box.inert = false;
+      rosterLoading.box.classList.remove('dplus-roster-stale');
+    },
+  });
+
+  function rosterLoad($box, url, callback, originalLoad) {
+    const jq = window.jQuery;
+    const box = $box[0];
+    if (rosterLoading && rosterLoading.box === box) return $box; // already loading (e.g. the tab was clicked again)
+    const team = new URLSearchParams(url.split('?')[1] || '').get('TeamProfileID') || 'team';
+    const cache = rosterCache();
+    let banner = null;
+
+    // What is on screen until the fresh roster arrives: either the last copy from memory or the roster already showing
+    // (a reload). Either way it is labelled and disabled (inert), so nothing stale can be read as current or acted on.
+    const kept = cache.get(team);
+    const usable = kept && Date.now() - kept.at < ROSTER_KEEP_MS ? kept : null;
+    let fromCache = false;
+    if (!box.children.length && usable) {
+      statusAnswers.set(usable.ids, usable.statuses);
+      jq(box).html(usable.html); // the page's scripts run as on a normal load; their status lookup is answered from memory
+      fromCache = true;
+    }
+    if (box.children.length) {
+      box.inert = true;
+      box.classList.add('dplus-roster-stale');
+      const mins = Math.max(1, Math.round((Date.now() - (usable ? usable.at : Date.now())) / 60000));
+      banner = waitNote(box, 'dplus-wait-roster',
+        fromCache ? 'Showing the roster from ' + (mins <= 1 ? 'a minute' : mins + ' minutes') + ' ago — updating…' : 'Updating the roster…',
+        'Everything below is paused until the latest roster arrives. Large teams can take a minute or more.');
+    } else {
+      banner = waitNote(box, 'dplus-wait-roster', SLOW_LOADS['acct-roster-accordion'].title,
+        'Large teams can take a minute or more. Screening and training are then checked in the background.');
+    }
+    const finish = () => {
+      if (banner) banner.done();
+      box.inert = false;
+      box.classList.remove('dplus-roster-stale');
+      rosterLoading = null;
+    };
+    rosterLoading = { box, fromCache, finish };
+
+    (async () => {
+      const html = await ajaxText(jq, { url, type: 'GET', dataType: 'html', cache: true });
+      const ids = rosterPeopleIds(html);
+      let statuses = null;
+      if (ids && ids.length && isOn()) {
+        if (banner) banner.done();
+        banner = waitNote(box, 'dplus-wait-roster', 'Checking screening and training…',
+          'The roster has arrived; FIRST is now checking each adult\'s screening and training (about a second each). '
+          + 'The page stays usable meanwhile.');
+        const statusUrl = '/Teams/Page/TeamContacts/GetPersonStatus?TeamProfileID=' + encodeURIComponent(team);
+        try {
+          statuses = await ajaxText(jq, { url: statusUrl, type: 'GET', data: { ids }, traditional: true, dataType: 'json', cache: false, dplusFresh: true });
+          statusAnswers.set(idsKey(ids), statuses);
+        } catch (err) {
+          statuses = null; // the page will make its own (freezing) lookup, as it always did
+        }
+      }
+      finish();
+      jq(box).html(html); // as .load() does: insert, run the page's scripts (status lookup answered from memory)
+      if (statuses != null) cache.set(team, { html, statuses, ids: idsKey(ids), at: Date.now() });
+      if (typeof callback === 'function') callback.call(box, html, 'success', null);
+    })().catch(() => {
+      // The roster itself could not be fetched: remove any copy from memory, then let the site load it as usual.
+      if (fromCache) box.replaceChildren();
+      finish();
+      const note = waitNote(box, 'dplus-wait-roster', SLOW_LOADS['acct-roster-accordion'].title, SLOW_LOADS['acct-roster-accordion'].hint);
+      originalLoad.call($box, url, function (...args) { note.done(); if (callback) return callback.apply(this, args); });
+    });
+    return $box;
+  }
+
   function initSlowLoads() {
+    initStatusAnswers();
     const jq = window.jQuery;
     if (!jq || !jq.fn || !jq.fn.load || jq.fn.load.__dplus) return;
     const original = jq.fn.load;
@@ -250,6 +440,10 @@
       // .load(fn) with no URL is the old "load event" shortcut, not a fetch: leave it alone.
       if (typeof url !== 'string' || this.length !== 1) return original.call(this, url, ...rest);
       const target = this[0];
+      // The roster gets its own loader (cached copy shown at once, screening lookup in the background).
+      if (isOn() && target.id === 'acct-roster-accordion' && rest.length <= 1 && rest.every((a) => typeof a === 'function')) {
+        return rosterLoad(this, url, rest[0], original);
+      }
       const known = SLOW_LOADS[target.id];
       let note = null, finished = false;
       // The hook stays installed when Dashboard+ is switched off (unhooking could break a load in progress); it just
@@ -508,39 +702,46 @@
       }
       const waiting = r.youthApplied.length + r.mentorApps.length;
       const noCR = r.peopleNoCR.length + r.mentorAppsNoCR.length + r.youthNoCR.length;
-      const stat = (n, label, warn, title) => el('div', { class: 'dplus-stat' + (warn && n > 0 ? ' dplus-warn' : ''), title: title || null },
-        label + ' ', el('b', { text: String(n) }));
+      // One even grid of tiles: the number, what it counts, the breakdown, and (where there is something to do) the
+      // action right on the tile it acts on. Only "needs attention" tiles above zero are highlighted.
+      const tile = ({ n, label, detail, warn, action }) => el('div', { class: 'dplus-stat' + (warn && n > 0 ? ' dplus-warn' : '') },
+        el('div', { class: 'dplus-stat-n', text: String(n) }),
+        el('div', { class: 'dplus-stat-label', text: label }),
+        detail && el('div', { class: 'dplus-stat-detail', text: detail }),
+        action && n > 0 && el('button', { class: 'dplus-btn dplus-stat-action', type: 'button', text: action.text, onclick: action.run }));
 
       fill(panel,
         el('div', { class: 'dplus-head' }, el('span', { class: 'dplus-badge', text: 'Dashboard+' }), 'Roster at a glance'),
         el('div', { class: 'dplus-stats' },
-          stat(r.people.length, 'Coaches, mentors and contacts'),
-          stat(r.youthAccepted.length, 'Youth accepted'),
-          stat(waiting, 'Waiting for a decision', true, plural(r.youthApplied.length, 'youth', 'youth') + ', ' + plural(r.mentorApps.length, 'mentor', 'mentors')),
-          stat(noCR, 'No Consent & Release', true,
-            plural(r.peopleNoCR.length + r.mentorAppsNoCR.length, 'adult', 'adults') + ', ' + plural(r.youthNoCR.length, 'youth', 'youth')),
-          stat(r.screening.length, 'Screening incomplete', true),
-          stat(r.training.length, 'Training incomplete', true)),
-        r.youthHidden && el('div', { class: 'dplus-note', text: 'Youth are hidden on this team until two Lead Coaches have passed Youth Protection screening, so youth counts read as zero.' }),
-        el('div', { class: 'dplus-actions' },
-          el('button', {
-            class: 'dplus-btn', type: 'button', disabled: waiting === 0,
-            text: 'Accept applicants (' + waiting + ')…',
-            onclick: () => showList({
-              title: 'Accept applicants',
-              intro: 'Everyone ticked below is accepted onto the team, the same as choosing Approve Membership or Accept Application in their Options menu. Nothing happens until you press the button.',
-              groups: acceptGroups(r), toLabel: 'Email', verb: 'Accept', one: 'applicant', many: 'applicants', done: 'accepted',
-            }),
+          tile({ n: r.people.length, label: 'Coaches, mentors and contacts' }),
+          tile({ n: r.youthAccepted.length, label: 'Youth accepted' }),
+          tile({
+            n: waiting, label: 'Waiting for a decision', warn: true,
+            detail: waiting ? plural(r.youthApplied.length, 'youth', 'youth') + ', ' + plural(r.mentorApps.length, 'mentor', 'mentors') : null,
+            action: {
+              text: 'Accept…',
+              run: () => showList({
+                title: 'Accept applicants',
+                intro: 'Everyone ticked below is accepted onto the team, the same as choosing Approve Membership or Accept Application in their Options menu. Nothing happens until you press the button.',
+                groups: acceptGroups(r), toLabel: 'Email', verb: 'Accept', one: 'applicant', many: 'applicants', done: 'accepted',
+              }),
+            },
           }),
-          el('button', {
-            class: 'dplus-btn', type: 'button', disabled: noCR === 0,
-            text: 'Send C&R reminders (' + noCR + ')…',
-            onclick: () => showList({
-              title: 'Send Consent & Release reminders',
-              intro: 'Everyone ticked below gets the site\'s standard Consent & Release reminder email, the same as choosing Send C&R Email Reminder in their Options menu. Nothing is sent until you press the button.',
-              groups: reminderGroups(r), toLabel: 'Reminder goes to', verb: 'Send', one: 'reminder', many: 'reminders', done: 'sent',
-            }),
-          })));
+          tile({
+            n: noCR, label: 'No Consent & Release', warn: true,
+            detail: noCR ? plural(r.peopleNoCR.length + r.mentorAppsNoCR.length, 'adult', 'adults') + ', ' + plural(r.youthNoCR.length, 'youth', 'youth') : null,
+            action: {
+              text: 'Send reminders…',
+              run: () => showList({
+                title: 'Send Consent & Release reminders',
+                intro: 'Everyone ticked below gets the site\'s standard Consent & Release reminder email, the same as choosing Send C&R Email Reminder in their Options menu. Nothing is sent until you press the button.',
+                groups: reminderGroups(r), toLabel: 'Reminder goes to', verb: 'Send', one: 'reminder', many: 'reminders', done: 'sent',
+              }),
+            },
+          }),
+          tile({ n: r.screening.length, label: 'Screening incomplete', warn: true }),
+          tile({ n: r.training.length, label: 'Training incomplete', warn: true })),
+        r.youthHidden && el('div', { class: 'dplus-note', text: 'Youth are hidden on this team until two Lead Coaches have passed Youth Protection screening, so youth counts read as zero.' }));
     }
 
     function showList(spec) {
@@ -658,18 +859,27 @@
     const frame = document.getElementById('appFrame');
     if (!frame) return;
     const header = document.querySelector('.navbar-fixed-top');
+    // The Dashboard's own sections (persona lists and the persona chooser). If any is on screen, this is the Dashboard
+    // home, which must scroll normally whatever state the frame is in.
+    const homeSections = ['RoleSelection', 'TeamsApp', 'VolunteersApp', 'StudentsApp', 'ClassPackApp']
+      .map((id) => document.getElementById(id)).filter(Boolean);
     let active = false;
     function update() {
-      const open = active && frame.offsetWidth > 0 && frame.offsetHeight > 0 && getComputedStyle(frame).display !== 'none';
-      root.classList.toggle('dplus-frame-open', open);
+      const frameShown = frame.offsetWidth > 0 && frame.offsetHeight > 0 && getComputedStyle(frame).display !== 'none';
+      const homeShown = homeSections.some((s) => s.offsetHeight > 0);
+      root.classList.toggle('dplus-frame-open', active && frameShown && !homeShown);
+      // Seen once after coming back from My Invitations/Roles: the Dashboard showed its home again but left the page
+      // frame showing above it (a strip of the old page above the banner). The Dashboard always hides its home before
+      // opening a page in the frame, so when the home is showing, the frame is a leftover: hide it.
+      root.classList.toggle('dplus-frame-stray', active && homeShown && frame.style.display !== 'none');
       if (header) root.style.setProperty('--dplus-header', header.offsetHeight + 'px');
     }
-    const watcher = new MutationObserver(update);
+    const watcher = new MutationObserver(later(update, 0));
     feature({
       on() {
         active = true;
-        // The site shows and hides the frame with jQuery (inline style); the sections around it the same way.
-        watcher.observe(frame, { attributes: true, attributeFilter: ['style', 'class'] });
+        // The site shows and hides the frame and its own sections with jQuery (inline style): watch all of them.
+        for (const n of [frame, ...homeSections]) watcher.observe(n, { attributes: true, attributeFilter: ['style', 'class'] });
         window.addEventListener('resize', update);
         update();
       },
@@ -1065,8 +1275,8 @@
     return group;
   }
 
-  openRequestedTab();
   initSlowLoads();
+  initLeavingNote();
   initFrameFit();
   initTabNotice();
   initPaymentHistory();
@@ -1074,4 +1284,7 @@
   initTeamList();
   initRoster();
   initRosterCompact();
+  // Last, so the loading message, roster panel and the rest are ready before a requested tab (often the slow roster)
+  // starts loading.
+  openRequestedTab();
 })();

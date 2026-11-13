@@ -24,10 +24,15 @@ The site's own text for these is often a raw key (`val.team_contacts:1`) or noth
 
 ### Know when the site is still working
 
-A large team's roster takes FIRST over a minute to send, and until now the **Team Roster** tab just sat blank. Dashboard+
-shows "Loading the roster…" with a seconds counter until it arrives. It also warns that the page may stop responding
-for a while afterwards, while the site looks up everyone's screening. The same message appears for any other section
-of a team page that takes more than a moment to load.
+A large team's roster takes FIRST over a minute to build, and the Team Roster tab used to sit blank meanwhile, then
+freeze the whole Dashboard for up to half a minute while the site checked everyone's screening. Now:
+
+- **Seen it recently? It appears at once.** The last roster you opened for each team (within 30 minutes) shows
+  immediately, dimmed and disabled under a "Showing the roster from N minutes ago — updating…" banner, until the fresh
+  one replaces it. It is kept in memory only, never saved, and is gone when you close or reload the Dashboard tab.
+- **No freeze.** The screening and training check runs in the background with its own message, so the page stays
+  usable. On a large real team: roster 59–63 s, then screening 23–27 s, with no stall over half a second.
+- "Loading…" with a timer appears for any other section of a team page that takes more than a moment.
 
 ### Payment History without the Search button
 
@@ -44,14 +49,15 @@ screenshot above), so there is no Switch Persona round-trip. Personas with nothi
 
 ### Roster at a glance
 
-On a team's **Team Roster** tab, a summary shows who is waiting for a decision and who is missing Consent & Release,
-screening or training — without scrolling through every person.
+On a team's **Team Roster** tab, a row of tiles shows who is waiting for a decision and who is missing Consent & Release,
+screening or training — without scrolling through every person. Counts that need attention are highlighted, and the
+actions sit on the tiles they act on.
 
 ![Roster summary with counts for applicants, missing Consent & Release, screening and training](docs/roster-at-a-glance.png)
 
 ### Bulk accept and bulk C&R reminders
 
-**Accept applicants…** and **Send C&R reminders…** list everyone affected with a tick box. Nothing happens until you
+**Accept…** (on the "Waiting for a decision" tile) and **Send reminders…** (on "No Consent & Release") list everyone affected with a tick box. Nothing happens until you
 press the button; then requests go out one at a time, each row shows its result, and a run can be stopped part-way.
 Reminders go to coaches and mentors by default; parents of youth are listed but left unticked, and anyone without an
 email on file is shown and skipped.
@@ -78,15 +84,19 @@ Options menu.
 - The **Team Roster** tab fills the page width like the other tabs, and its Expand All row lines up with the heading.
 - Drop-downs (Country, Region, Sponsor type…) match the text boxes beside them in font, inset and border.
 - On the roster, parent/guardian names use the same font as every other name (the site styled them as larger grey labels).
+- Button rows under each tab heading wrap evenly in a narrow window, and the **Awards List** tiles sit two or three to a row
+  instead of one full-width tile per row.
 - Checkboxes in **Communication & Mentoring** (and similar sections) sit beside their labels, not above them.
 - "My team is participating" and its **Secured for this season** badge sit on one line.
 - **Sponsors** and **School/Organization**: the "Sponsor 1" heading column is narrow, so the fields get the width (it took a third of the card).
 - The three mentoring checklists ("willing to mentor", "areas", "need mentoring in") are spaced the same.
 - A lone sponsor no longer shows a "swap down" arrow with nothing to swap with.
+- **Print Prior Season Roster** is hidden when FIRST has disabled it for your account (it gave no reason on some teams).
 - The task tooltip over the first team tab is no longer cut off.
 - The older roster wizard no longer draws its "Create New Team" header and step bar twice.
 
 **Elsewhere**
+- The banner photo at the top of the Dashboard keeps its proportions instead of stretching with the window.
 - The team list's **Participating Team** column no longer runs off the edge at narrow widths.
 - **My Profile**: the second column of fields lines up all the way down the form.
 - **My Invitations/Roles** lines up with the other Profile tabs instead of jumping sideways.

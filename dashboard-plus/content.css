@@ -100,8 +100,45 @@ html[data-dplus="on"] {
   /* Team Roster tab: the roster sits in a column flexbox without a width, so it shrank to its contents and stopped
      short of the right edge that the other tabs reach. */
   .team-content > #acct-roster-accordion { align-self: stretch; }
-  /* Its Expand All / Close All / Printable Roster row started 16px in from the heading above it. */
-  #acct-roster-accordion > div:has(> .btn-cancel) > :first-child { margin-left: 0; }
+  /* Button rows under each tab heading (Expand All, Close All, Event Help, Find an Event, Printable Roster…): each
+     button had 16px side margins except the first, so the row started 16px in and, in a narrow window, the buttons
+     that wrapped to a second line were indented and unevenly spaced. Wrap them evenly from the left edge. */
+  .expand-close-section,
+  #acct-roster-accordion > div:has(> .btn-cancel) {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 12px 16px;
+  }
+  .expand-close-section > *,
+  #acct-roster-accordion > div:has(> .btn-cancel) > *,
+  #acct-roster-accordion > div:has(> .btn-cancel) > span > .ds-btn {
+    margin: 0 !important;
+  }
+
+  /* Team Roster: "Print Prior Season Roster" comes disabled whenever FIRST won't let this account see the team's
+     prior-season roster (on some teams without any explanation), so it only looked broken. Hide it when disabled. */
+  .printable-roster-wrapper:has(> #show-prior-season-printable-roster:disabled) { display: none !important; }
+
+  /* Team Events and Awards → Awards List: the award tiles went one per row (each the full width) in a narrow window.
+     Lay them out on a grid: three across when there is room, two when narrower, one only when very narrow. */
+  .row--full-width:has(> .col-md-4--award-list) {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    max-width: 960px;
+    margin: 10px auto 20px !important;
+  }
+  /* Bootstrap's invisible clearfix boxes on .row would otherwise take up grid cells. */
+  .row--full-width:has(> .col-md-4--award-list)::before,
+  .row--full-width:has(> .col-md-4--award-list)::after {
+    display: none !important;
+  }
+  .row--full-width > .col-md-4--award-list {
+    width: auto !important;
+    max-width: none;
+    margin: 0 !important;
+    float: none;
+  }
 
   /* Roster, youth rows: the parent/guardian's name is wrapped in a <label>, so the site's label style made it larger and
      grey, unlike every other name on the roster. Match the plain 13px text around it. */
@@ -124,6 +161,40 @@ html[data-dplus="on"] {
   #payment-history:not(.dplus-ph-done) #recordNotFound {
     display: none !important;
   }
+
+  /* A team page on its way to another page (e.g. Printable Roster): a light cover with the message on top. */
+  #dplus-leaving {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 120px;
+    background: rgba(245, 249, 255, 0.7);
+  }
+  #dplus-leaving .dplus-wait {
+    max-width: 640px;
+    margin: 0 16px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  }
+  #dplus-leaving .dplus-wait .dplus-btn { margin-left: auto; align-self: center; }
+
+  /* Roster loading: the banner stays in view while scrolling, and a roster shown from memory (or being reloaded) is
+     dimmed; it is also inert (no clicks, no keyboard) until the fresh roster replaces it. */
+  #dplus-wait-roster {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  }
+  #acct-roster-accordion.dplus-roster-stale {
+    opacity: 0.55;
+    filter: grayscale(0.4);
+  }
+
+  /* The Dashboard home is showing but a page was left in the frame above it (content.js, initFrameFit): hide it. */
+  &.dplus-frame-stray #appFrame { display: none !important; }
 
   /* Roster: each person's status lines and check boxes, moved under their name by content.js (initRosterCompact). */
   .roster-status-row.dplus-emptied { display: none; }
@@ -227,6 +298,14 @@ html[data-dplus="on"] {
   }
   .race-block:has(.pif-AllergyList-btn) > :not(:has(.pif-AllergyList-btn)) { grid-column: 1 / -1; }
   .race-block .pif-AllergyList-btn { width: 100%; }
+
+  /* Dashboard home: the banner photo at the top of each persona (Team, Event Volunteer, Parent/Guardian, Class Pack)
+     is drawn 200px tall at the full window width with no aspect handling, so it stretched sideways as the window
+     widened (1.7x on a wide screen). Crop it to fill the strip instead, keeping the people in frame. */
+  .team-banner > img {
+    object-fit: cover;
+    object-position: center 35%;
+  }
 
   /* Dashboard tables (team list and the like): every column has a 7px margin on each side that the site's percentage
      widths do not allow for, so the last column ("Participating Team") ran past the table's right edge. Let the columns
@@ -414,20 +493,41 @@ html[data-dplus="on"] {
     font-weight: 700;
     letter-spacing: 0.02em;
   }
+  /* Roster at a glance: an even grid of six tiles: one row of six when there is room, otherwise two rows of three
+     (or three of two when very narrow), never a lone tile on a row of its own. */
+  #dplus-roster-panel { container-type: inline-size; }
   .dplus-stats {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 4px;
   }
+  @container (max-width: 960px) { .dplus-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @container (max-width: 480px) { .dplus-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .dplus-stat {
-    padding: 6px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 10px 12px;
     border: 1px solid #d9e2ee;
+    border-left: 4px solid #d9e2ee;
     border-radius: 6px;
     background: #fff;
   }
-  .dplus-stat b { font-size: 16px; }
-  .dplus-stat.dplus-warn { border-color: #e0a100; background: #fff8e1; }
+  .dplus-stat-n { font-size: 22px; line-height: 26px; font-weight: 700; color: #1a1a1a; }
+  .dplus-stat-label { font-size: 13px; line-height: 17px; color: #3c4450; }
+  .dplus-stat-detail { font-size: 12px; line-height: 16px; color: #6b7280; }
+  .dplus-stat.dplus-warn { border-color: #f0d9a0; border-left-color: #e0a100; background: #fffaf0; }
+  .dplus-stat.dplus-warn .dplus-stat-n { color: #8a5a00; }
+  .dplus-stat-label, .dplus-stat-detail { margin-bottom: 6px; }
+  /* The action sits at the foot of its tile, so buttons line up across a row. */
+  .dplus-stat .dplus-stat-action {
+    margin-top: auto;
+    padding: 4px 10px;
+    font-size: 12px;
+    align-self: stretch;
+  }
   .dplus-note { margin: 0 0 10px; color: #3c4450; }
   .dplus-actions {
     display: flex;
