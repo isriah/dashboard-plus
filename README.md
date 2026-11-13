@@ -13,7 +13,7 @@ without a click.
 ### See what every task actually is
 
 Each team's badges become one count, and underneath sits one plain-English line per cause, what it is holding up, and
-a **Fix** button that opens the exact page where it gets fixed.
+a **Fix** button that opens the exact page where it gets fixed (clicking anywhere on the line does the same).
 
 ![Team list with each team's tasks spelled out under it, each with a Fix button](docs/team-list.png)
 
@@ -26,6 +26,13 @@ A large team's roster takes FIRST over a minute to send, and until now the **Tea
 shows "Loading the roster…" with a seconds counter until it arrives. It also warns that the page may stop responding
 for a while afterwards, while the site looks up everyone's screening. The same message appears for any other section
 of a team page that takes more than a moment to load.
+
+### Payment History without the Search button
+
+On **Team Finances**, Payment History now loads by itself when you open the tab, and picking another season loads it
+straight away. FIRST's own Search froze the whole page for 8–11 seconds; Dashboard+ runs the same request in the
+background with a "Loading payment history…" message instead of the site's "$0.00 / not available" placeholder.
+Seasons you've already looked at come back instantly.
 
 ### Jump between personas from the sidebar
 

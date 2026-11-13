@@ -118,6 +118,13 @@ html[data-dplus="on"] {
     body { overflow: hidden; }
   }
 
+  /* Finances → Payment History: until the first answer arrives (content.js, initPaymentHistory), hide the site's
+     placeholder "Total amount paid: $0.00" and "Payment records not available", which looked like a real result. */
+  #payment-history:not(.dplus-ph-done) .total-amount-paid,
+  #payment-history:not(.dplus-ph-done) #recordNotFound {
+    display: none !important;
+  }
+
   /* Roster: each person's status lines and check boxes, moved under their name by content.js (initRosterCompact). */
   .roster-status-row.dplus-emptied { display: none; }
   .dplus-status-stack { margin-top: 4px; }
@@ -244,15 +251,28 @@ html[data-dplus="on"] {
     color: #1a1a1a;
   }
   /* dot | reason + tag | holds up (one line, cut off) | Fix */
+  /* The reason column is as wide as the longest reason for that team (at most half the row), so "Holds up …"
+     follows close behind it and still lines up from row to row. Rows share the team's columns (subgrid). */
+  .dplus-reasons {
+    display: grid;
+    grid-template-columns: 8px fit-content(50%) minmax(0, 1fr) 44px;
+    column-gap: 16px;
+  }
+  .dplus-reasons.dplus-nofix { grid-template-columns: 8px fit-content(50%) minmax(0, 1fr); }
   .dplus-reason {
     display: grid;
-    grid-template-columns: 8px minmax(0, 46%) minmax(0, 1fr) 44px;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
     align-items: center;
-    column-gap: 10px;
-    padding: 3px 0;
+    padding: 3px 6px;
+    margin: 0 -6px;
+    border-radius: 4px;
   }
-  .dplus-reasons.dplus-nofix .dplus-reason { grid-template-columns: 8px minmax(0, 46%) minmax(0, 1fr); }
   .dplus-reason + .dplus-reason { border-top: 1px dashed #ecdede; }
+  /* A row with a Fix button opens the page from anywhere on the row. */
+  .dplus-reason.dplus-clickable { cursor: pointer; }
+  .dplus-reason.dplus-clickable:hover { background: #eef4fb; }
+  .dplus-reason.dplus-clickable:hover .dplus-link { background: var(--ds-color-primary, #0066b3); color: #fff; }
   .dplus-dot {
     width: 7px;
     height: 7px;
